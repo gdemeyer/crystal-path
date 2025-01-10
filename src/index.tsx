@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom/client';
 import './index.css';
 import App from './App.tsx';
 import * as serviceWorkerRegistration from './serviceWorkerRegistration.ts';
-import reportWebVitals from './reportWebVitals.ts';
+// import reportWebVitals from './reportWebVitals.ts';
 
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement

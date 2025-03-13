@@ -1,13 +1,20 @@
-.App {
+body {
   text-align: center;
   background-color: #282c34;
-  width: 100vw;
-  height: 100vh;
 }
+
+
+/* task entry */
 
 .task-entry-block {
   height: 10vh;
   padding: .5em;
+  width: 98vw;
+  display: table;
+
+  div {
+    display: table-row;
+  }
 }
 
 .task-title-input {
@@ -29,4 +36,32 @@
 
 .task-select-first-choice {
   color: grey;
+}
+
+
+/* task summary card block */
+
+.task-summary-card-block {
+  width: 98vw;
+  margin: 2rem;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+
+/* task summary card */
+
+.task-summary-card {
+  width: 30vw;
+  color: #cfcfcf;
+  padding: 2em;
+  margin: 2em;
+  border-style: solid;
+  border-color: #cfcfcf;
+  border-radius: 10px;
+}
+
+.task-summary-card-title {
+  text-align: left;
 }

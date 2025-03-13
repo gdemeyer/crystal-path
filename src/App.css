@@ -1,19 +1,24 @@
 body {
   text-align: center;
   background-color: #282c34;
+  display: flex;
+  justify-content: center;
 }
 
 
 /* task entry */
 
 .task-entry-block {
-  height: 10vh;
   padding: .5em;
-  width: 98vw;
-  display: table;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
 
   div {
-    display: table-row;
+    width: 85vw;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
   }
 }
 
@@ -25,11 +30,12 @@ body {
 
 .task-add-button {
   padding: .5em;
+  margin: 1em 0em;
   font-weight: 700;
 }
 
 .task-select {
-  width: 10vw;
+  min-width: 15vw;
   padding: .5em;
   margin: .25em;
 }
@@ -42,7 +48,6 @@ body {
 /* task summary card block */
 
 .task-summary-card-block {
-  width: 98vw;
   margin: 2rem;
   display: flex;
   flex-wrap: wrap;

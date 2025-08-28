@@ -1,10 +1,11 @@
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import TaskEntryBlock from './components/taskEntryBlock.tsx';
 import './App.css';
 import TaskSummaryCard from './components/taskSummaryCard.tsx';
 import TaskSummaryCardContainer from './components/taskSummaryCardBlock.tsx';
 import { Task } from './types/types.ts';
 import sortTasks from './utils/algo.ts';
+import health from './services/functions-health.ts'
 
 const tasks: Task[] = [
   {
@@ -40,11 +41,21 @@ const tasks: Task[] = [
 const sortedTasks = sortTasks(tasks)
 
 function App() {
+  const [functionHealth, setFunctionHealth] = useState(null)
+
+  useEffect(() => {
+    console.log('useEffect')
+    health().then(res => {
+      console.log(res)
+      setFunctionHealth(res.body)
+    })
+  }, [])
+
   return (
     <div className="App">
       <TaskEntryBlock />
       <TaskSummaryCardContainer>
-        {sortedTasks.map((task) => (<TaskSummaryCard title={task.title} key={task.title} />))}
+        {sortedTasks.map((task) => (<TaskSummaryCard title={task.title} />))}
       </TaskSummaryCardContainer>
     </div>
   );

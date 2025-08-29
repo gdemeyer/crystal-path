@@ -1,7 +1,7 @@
 import consts from "./consts.ts"
 
 export default async () => {
-    return fetch(`${process.env.REACT_APP_FUNCTIONS_BASE_URL}${consts.routes.health}`, {
+    return fetch(`${process.env.REACT_APP_FUNCTIONS_BASE_URL}${consts.routes.getTasks}`, {
         method: "GET",
         headers: {
             "Content-Type": "application/json",

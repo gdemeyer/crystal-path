@@ -1,7 +1,7 @@
 const consts = {
-    baseUrl: "https://crystal-path-functions.netlify.app/.netlify/functions/",
     routes: {
-        health: "health"
+        health: "health",
+        getTasks: "get-tasks"
     }
 }
 

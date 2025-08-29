@@ -5,51 +5,30 @@ import TaskSummaryCard from './components/taskSummaryCard.tsx';
 import TaskSummaryCardContainer from './components/taskSummaryCardBlock.tsx';
 import { Task } from './types/types.ts';
 import sortTasks from './utils/algo.ts';
-import health from './services/functions-health.ts'
-
-const tasks: Task[] = [
-  {
-    title: "Play Card Games with Aurora",
-    urgency: 13,
-    impact: 13,
-    time: 5,
-    difficulty: 8,
-  },
-  {
-    title: "Sleep",
-    urgency: 3,
-    impact: 5,
-    time: 8,
-    difficulty: 1,
-  },
-  {
-    title: "A Secret Third Thing",
-    urgency: 13,
-    impact: 13,
-    time: 1,
-    difficulty: 1,
-  },
-  {
-    title: "Profit",
-    urgency: 1,
-    impact: 1,
-    time: 13,
-    difficulty: 13,
-  },
-]
-
-const sortedTasks = sortTasks(tasks)
+import getFunctionsHealth from './services/functions-health.ts'
+import getTasks from './services/functions-get-tasks.ts'
 
 function App() {
   const [functionHealth, setFunctionHealth] = useState(null)
+  const [tasks, setTasks] = useState([] as Task[])
+  const [sortedTasks, setSortedTasks] = useState([] as Task[])
 
   useEffect(() => {
     console.log('useEffect')
-    health().then(res => {
+    getFunctionsHealth().then(res => {
       console.log(res)
       setFunctionHealth(res.body)
     })
+
+    getTasks().then(res => {
+      console.log(res)
+      setTasks(res)
+    })
   }, [])
+
+  useEffect(() => {
+    setSortedTasks(sortTasks(tasks))
+  }, [tasks])
 
   return (
     <div className="App">

@@ -9,7 +9,6 @@ import getFunctionsHealth from './services/functions-health.ts'
 import getTasks from './services/functions-get-tasks.ts'
 
 function App() {
-  const [functionHealth, setFunctionHealth] = useState(null)
   const [tasks, setTasks] = useState([] as Task[])
   const [sortedTasks, setSortedTasks] = useState([] as Task[])
 
@@ -17,7 +16,6 @@ function App() {
     console.log('useEffect')
     getFunctionsHealth().then(res => {
       console.log(res)
-      setFunctionHealth(res.body)
     })
 
     getTasks().then(res => {

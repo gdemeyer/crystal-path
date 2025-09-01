@@ -9,8 +9,8 @@ import getFunctionsHealth from './services/functions-health.ts'
 import getTasks from './services/functions-get-tasks.ts'
 
 function App() {
-  const [tasks, setTasks] = useState([] as Task[])
-  const [sortedTasks, setSortedTasks] = useState([] as Task[])
+  const [tasks, setTasks] = useState<Task[]>([])
+  const [sortedTasks, setSortedTasks] = useState<Task[]>([])
 
   useEffect(() => {
     console.log('useEffect')

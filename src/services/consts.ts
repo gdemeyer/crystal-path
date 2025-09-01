@@ -1,7 +1,8 @@
 const consts = {
     routes: {
         health: "health",
-        getTasks: "get-tasks"
+        getTasks: "get-tasks",
+        postTask: "post-task"
     }
 }
 

@@ -2,13 +2,25 @@ import React, { useEffect, useState } from 'react';
 import { Task } from '../types/types';
 import postTask from '../services/functions-post-task.ts'
 
-export default function TaskEntryBlock() {
+interface TaskEntryBlockProps {
+  onTaskAdded?: (task: Task) => void;
+}
+
+export default function TaskEntryBlock({ onTaskAdded }: TaskEntryBlockProps) {
   const [task, setTask] = useState<Task>()
   const [title, setTitle] = useState('')
   const [urgency, setUrgency] = useState(0)
   const [impact, setImpact] = useState(0)
   const [time, setTime] = useState(0)
   const [difficulty, setDifficulty] = useState(0)
+  const [attemptedSubmit, setAttemptedSubmit] = useState(false)
+
+  const isTitleEmpty = title === ''
+  const isUrgencyEmpty = urgency === 0
+  const isImpactEmpty = impact === 0
+  const isTimeEmpty = time === 0
+  const isDifficultyEmpty = difficulty === 0
+  const hasErrors = isTitleEmpty || isUrgencyEmpty || isImpactEmpty || isTimeEmpty || isDifficultyEmpty
 
   useEffect(() => {
     console.log(title)
@@ -21,9 +33,7 @@ export default function TaskEntryBlock() {
     })
   }, [title, urgency, impact, time, difficulty])
 
-  function onAddClick(e: React.MouseEvent<HTMLButtonElement>) {
-    e.preventDefault()
-
+  function submitTask() {
     if (title === ''
       || urgency === 0
       || impact === 0
@@ -32,13 +42,14 @@ export default function TaskEntryBlock() {
       || task === undefined
     ) {
       console.log('invalid input')
-      // TODO: add ux
+      setAttemptedSubmit(true)
       return;
     }
 
     postTask(task)
-    .then(() => {
-      // refresh list from server
+    .then((createdTask) => {
+      // Call the callback with the created task
+      onTaskAdded?.(createdTask)
 
       // clear inputs
       setTitle('')
@@ -46,17 +57,40 @@ export default function TaskEntryBlock() {
       setImpact(0)
       setTime(0)
       setDifficulty(0)
+      setAttemptedSubmit(false)
     })
+  }
+
+  function onAddClick(e: React.MouseEvent<HTMLButtonElement>) {
+    e.preventDefault()
+    submitTask()
+  }
+
+  function onTitleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
+    if (e.key === 'Enter') {
+      e.preventDefault()
+      submitTask()
+    }
   }
 
   return (
     <div className="task-entry-block">
       <div>
-        <input className="task-title-input" value={title} onChange={e => setTitle(e.target.value)}/>
+        <input 
+          className={`task-title-input ${attemptedSubmit && isTitleEmpty ? 'error' : ''}`}
+          value={title} 
+          onChange={e => setTitle(e.target.value)} 
+          onKeyDown={onTitleKeyDown}
+          placeholder="Title"
+        />
         <button className="task-add-button" onClick={onAddClick}>+</button>
       </div>
       <div>
-        <select className="task-select task-urgency-select" value={urgency} onChange={e => setUrgency(+e.target.value)}>
+        <select 
+          className={`task-select task-urgency-select ${attemptedSubmit && hasErrors ? 'error' : ''}`}
+          value={urgency} 
+          onChange={e => setUrgency(+e.target.value)}
+        >
           <option value="0" disabled>urgency</option>
           <option value="1">eventually</option>
           <option value="2">this month</option>
@@ -65,7 +99,11 @@ export default function TaskEntryBlock() {
           <option value="8">today</option>
           <option value="13">immediately</option>
         </select>
-        <select className="task-select task-impact-select" value={impact} onChange={e => setImpact(+e.target.value)}>
+        <select 
+          className={`task-select task-impact-select ${attemptedSubmit && hasErrors ? 'error' : ''}`}
+          value={impact} 
+          onChange={e => setImpact(+e.target.value)}
+        >
           <option value="0" disabled>impact</option>
           <option value="1">none</option>
           <option value="2">minor</option>
@@ -74,7 +112,11 @@ export default function TaskEntryBlock() {
           <option value="8">very high</option>
           <option value="13">extreme</option>
         </select>
-        <select className="task-select task-time-select" value={time} onChange={e => setTime(+e.target.value)}>
+        <select 
+          className={`task-select task-time-select ${attemptedSubmit && hasErrors ? 'error' : ''}`}
+          value={time} 
+          onChange={e => setTime(+e.target.value)}
+        >
           <option value="0" disabled>time</option>
           <option value="1">a few min</option>
           <option value="2">&lt;30 min</option>
@@ -83,7 +125,11 @@ export default function TaskEntryBlock() {
           <option value="8">4-8 hr</option>
           <option value="13">&gt;8 hr</option>
         </select>
-        <select className="task-select task-difficulty-select" value={difficulty} onChange={e => setDifficulty(+e.target.value)}>
+        <select 
+          className={`task-select task-difficulty-select ${attemptedSubmit && hasErrors ? 'error' : ''}`}
+          value={difficulty} 
+          onChange={e => setDifficulty(+e.target.value)}
+        >
           <option value="0" disabled>difficulty</option>
           <option value="1">trivial</option>
           <option value="2">easy</option>
@@ -93,6 +139,7 @@ export default function TaskEntryBlock() {
           <option value="13">impossible</option>
         </select>
       </div>
+      {attemptedSubmit && hasErrors && <p className="error-text">Please fill out all required fields</p>}
     </div>
   );
 }

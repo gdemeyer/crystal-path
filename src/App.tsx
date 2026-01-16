@@ -28,9 +28,13 @@ function App() {
     setSortedTasks(sortTasks(tasks))
   }, [tasks])
 
+  const handleTaskAdded = (newTask: Task) => {
+    setTasks([...tasks, newTask])
+  }
+
   return (
     <div className="App">
-      <TaskEntryBlock />
+      <TaskEntryBlock onTaskAdded={handleTaskAdded} />
       <TaskSummaryCardContainer>
         {sortedTasks.map((task) => (<TaskSummaryCard title={task.title} />))}
       </TaskSummaryCardContainer>

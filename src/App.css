@@ -28,6 +28,10 @@ body {
   margin: 1em;
 }
 
+.task-title-input.error {
+  outline: 1px solid #dba11c;
+}
+
 .task-add-button {
   padding: .5em;
   margin: 1em 0em;
@@ -40,8 +44,16 @@ body {
   margin: .25em;
 }
 
-.task-select-first-choice {
-  color: grey;
+.task-select.error {
+  outline: 1px solid #dba11c;
+}
+
+.error-text {
+  color: #dba11c;
+  font-size: 0.75em;
+  margin: 0.25em 0.25em 0.5em 0.25em;
+  display: block;
+  width: 100vw;
 }
 
 

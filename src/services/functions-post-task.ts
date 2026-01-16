@@ -1,8 +1,8 @@
 import { Task } from "../types/types.ts"
 import consts from "./consts.ts"
 
-const postTask = async (task: Task) => {
-    return fetch(`${process.env.REACT_APP_FUNCTIONS_BASE_URL}${consts.routes.postTask}`, {
+const postTask = async (task: Task): Promise<Task> => {
+    const response = await fetch(`${process.env.REACT_APP_FUNCTIONS_BASE_URL}${consts.routes.postTask}`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
@@ -10,7 +10,7 @@ const postTask = async (task: Task) => {
         },
         body: JSON.stringify(task)
     })
-    .then(res => res.json())
+    return response.json()
 }
 
 export default postTask

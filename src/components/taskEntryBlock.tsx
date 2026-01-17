@@ -4,9 +4,10 @@ import postTask from '../services/functions-post-task.ts'
 
 interface TaskEntryBlockProps {
   onTaskAdded?: (task: Task) => void;
+  token?: string;
 }
 
-export default function TaskEntryBlock({ onTaskAdded }: TaskEntryBlockProps) {
+export default function TaskEntryBlock({ onTaskAdded, token }: TaskEntryBlockProps) {
   const [task, setTask] = useState<Task>()
   const [title, setTitle] = useState('')
   const [urgency, setUrgency] = useState(0)
@@ -46,7 +47,7 @@ export default function TaskEntryBlock({ onTaskAdded }: TaskEntryBlockProps) {
       return;
     }
 
-    postTask(task)
+    postTask(task, token)
     .then((createdTask) => {
       // Call the callback with the created task
       onTaskAdded?.(createdTask)

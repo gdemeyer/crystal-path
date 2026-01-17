@@ -1,0 +1,138 @@
+.login-page {
+    width: 100vw;
+    min-height: 100vh;
+    background-color: #282c34;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2em;
+}
+
+.login-container {
+    background-color: #1e2228;
+    border: 1px solid #cfcfcf;
+    border-radius: 10px;
+    padding: 3em;
+    max-width: 400px;
+    width: 100%;
+    text-align: center;
+}
+
+.login-title {
+    color: #cfcfcf;
+    font-size: 2.5em;
+    margin: 0 0 0.5em 0;
+    font-weight: 700;
+}
+
+.login-subtitle {
+    color: #999;
+    font-size: 0.9em;
+    margin: 0 0 2em 0;
+}
+
+.login-content {
+    display: flex;
+    flex-direction: column;
+    gap: 2em;
+    margin: 2em 0;
+}
+
+.login-error {
+    background-color: #8b4513;
+    color: #dba11c;
+    padding: 1em;
+    border-radius: 5px;
+    border-left: 4px solid #dba11c;
+    text-align: left;
+    font-size: 0.9em;
+}
+
+.login-section {
+    display: flex;
+    flex-direction: column;
+    gap: 1em;
+    align-items: center;
+}
+
+.login-label {
+    color: #cfcfcf;
+    margin: 0;
+    font-size: 0.95em;
+}
+
+.google-button-container {
+    display: flex;
+    justify-content: center;
+}
+
+.demo-login-button {
+    padding: 0.75em 1.5em;
+    font-size: 1em;
+    font-weight: 700;
+    background-color: #4a5568;
+    color: #cfcfcf;
+    border: 1px solid #cfcfcf;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.demo-login-button:hover {
+    background-color: #5a6578;
+    border-color: #dba11c;
+    color: #dba11c;
+}
+
+.demo-login-button.secondary {
+    background-color: transparent;
+    border-color: #999;
+    color: #999;
+}
+
+.demo-login-button.secondary:hover {
+    background-color: rgba(219, 161, 28, 0.1);
+    border-color: #dba11c;
+    color: #dba11c;
+}
+
+.demo-info {
+    color: #999;
+    font-size: 0.85em;
+    margin: 0;
+    font-style: italic;
+}
+
+.login-divider {
+    color: #666;
+    font-size: 0.9em;
+    position: relative;
+    text-align: center;
+}
+
+.login-footer {
+    margin-top: 2em;
+    padding-top: 2em;
+    border-top: 1px solid #444;
+    color: #999;
+    font-size: 0.85em;
+}
+
+.login-footer p {
+    margin: 0;
+}
+
+@media (max-width: 600px) {
+    .login-container {
+        padding: 2em;
+        margin: 1em;
+    }
+
+    .login-title {
+        font-size: 1.8em;
+    }
+
+    .demo-login-button {
+        width: 100%;
+    }
+}

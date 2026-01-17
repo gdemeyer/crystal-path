@@ -5,6 +5,214 @@ body {
   justify-content: center;
 }
 
+.error-banner {
+  background-color: #5a2e2e;
+  color: #ff6b6b;
+  padding: 1em 2em;
+  border-bottom: 2px solid #ff6b6b;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.error-close {
+  background: none;
+  border: none;
+  color: #ff6b6b;
+  font-size: 1.2em;
+  cursor: pointer;
+  padding: 0;
+  margin-left: 1em;
+  transition: color 0.3s ease;
+}
+
+.error-close:hover {
+  color: #ff8888;
+}
+
+.app-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1em 2em;
+  border-bottom: 1px solid #444;
+  width: 100%;
+}
+
+.app-header h1 {
+  color: #cfcfcf;
+  margin: 0;
+  font-size: 1.5em;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 1em;
+}
+
+.logout-button {
+  padding: 0.5em 1em;
+  background-color: #4a5568;
+  color: #cfcfcf;
+  border: 1px solid #cfcfcf;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: 700;
+  transition: all 0.3s ease;
+}
+
+.logout-button:hover {
+  background-color: #5a6578;
+  border-color: #dba11c;
+  color: #dba11c;
+}
+
+/* hamburger menu */
+
+.hamburger-button {
+  padding: 0.5em 0.75em;
+  background-color: #4a5568;
+  color: #cfcfcf;
+  border: 1px solid #cfcfcf;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 1.2em;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hamburger-button:hover {
+  background-color: #5a6578;
+  border-color: #dba11c;
+  color: #dba11c;
+}
+
+.completed-tasks-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: flex-end;
+  z-index: 1000;
+}
+
+.completed-tasks-content {
+  background-color: #282c34;
+  color: #cfcfcf;
+  width: 100%;
+  max-width: 500px;
+  height: 100%;
+  overflow-y: auto;
+  padding: 2em;
+  border-left: 1px solid #444;
+}
+
+.completed-tasks-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2em;
+  border-bottom: 1px solid #444;
+  padding-bottom: 1em;
+}
+
+.completed-tasks-header h2 {
+  margin: 0;
+  color: #cfcfcf;
+}
+
+.close-button {
+  background: none;
+  border: none;
+  color: #cfcfcf;
+  font-size: 1.5em;
+  cursor: pointer;
+  padding: 0;
+  transition: color 0.3s ease;
+}
+
+.close-button:hover {
+  color: #dba11c;
+}
+
+.loading {
+  text-align: center;
+  padding: 2em;
+  color: #cfcfcf;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 2em;
+  color: #cfcfcf;
+  font-style: italic;
+}
+
+.completed-tasks-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1em;
+}
+
+.completed-task-item {
+  background-color: #4a5568;
+  padding: 1.5em;
+  border-radius: 5px;
+  border-left: 4px solid #4ade80;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1em;
+}
+
+.completed-task-content {
+  flex: 1;
+  text-align: left;
+}
+
+.completed-task-content h4 {
+  margin: 0 0 0.5em 0;
+  color: #cfcfcf;
+  word-wrap: break-word;
+}
+
+.task-metadata {
+  font-size: 0.85em;
+  color: #a0aec0;
+}
+
+.undo-button {
+  padding: 0.4em 0.8em;
+  background-color: #5a6578;
+  color: #cfcfcf;
+  border: 1px solid #cfcfcf;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: 700;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.undo-button:hover:not(:disabled) {
+  background-color: #6a7588;
+  border-color: #dba11c;
+  color: #dba11c;
+}
+
+.undo-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
 
 /* task entry */
 
@@ -77,8 +285,55 @@ body {
   border-style: solid;
   border-color: #cfcfcf;
   border-radius: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1em;
+}
+
+.task-summary-card-content {
+  flex: 1;
+  text-align: left;
 }
 
 .task-summary-card-title {
   text-align: left;
+  margin: 0;
+  word-wrap: break-word;
+}
+
+.complete-button {
+  padding: 0.5em 1em;
+  background-color: #4a5568;
+  color: #cfcfcf;
+  border: 2px solid #cfcfcf;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: 700;
+  transition: all 0.3s ease;
+  flex-shrink: 0;
+  min-width: 60px;
+}
+
+.complete-button:hover {
+  background-color: #5a6578;
+  border-color: #dba11c;
+  color: #dba11c;
+}
+
+.complete-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.complete-button.confirming {
+  background-color: #2d5a2d;
+  border-color: #4ade80;
+  color: #4ade80;
+}
+
+.complete-button.loading {
+  background-color: #3a4555;
+  border-color: #cfcfcf;
+  color: #a0aec0;
 }

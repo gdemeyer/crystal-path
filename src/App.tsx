@@ -5,7 +5,6 @@ import TaskSummaryCard from './components/taskSummaryCard.tsx';
 import TaskSummaryCardContainer from './components/taskSummaryCardBlock.tsx';
 import CompletedTasksMenu from './components/CompletedTasksMenu.tsx';
 import { Task } from './types/types.ts';
-import { TASK_STATUS } from './consts-status.ts';
 import getFunctionsHealth from './services/functions-health.ts'
 import getTasks from './services/functions-get-tasks.ts'
 import { useAuth } from './hooks/useAuth.ts';
@@ -14,7 +13,7 @@ import LoginPage from './pages/LoginPage.tsx';
 function App() {
   const { isAuthenticated, token, logout, isLoading } = useAuth();
   const [tasks, setTasks] = useState<Task[]>([])
-  const [lastSuccessfulTasks, setLastSuccessfulTasks] = useState<Task[]>([])
+  const [, setLastSuccessfulTasks] = useState<Task[]>([])
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
   useEffect(() => {

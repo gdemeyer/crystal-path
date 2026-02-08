@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Task } from '../types/types';
 import postTask from '../services/functions-post-task.ts'
 

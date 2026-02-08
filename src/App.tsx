@@ -16,7 +16,7 @@ function App() {
   const { isAuthenticated, token, logout, isLoading } = useAuth();
   const [tasks, setTasks] = useState<Task[]>([])
   const [sortedTasks, setSortedTasks] = useState<Task[]>([])
-  const [lastSuccessfulTasks, setLastSuccessfulTasks] = useState<Task[]>([])
+  const [setLastSuccessfulTasks] = useState<Task[]>([])
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
   useEffect(() => {

@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import { Task } from '../types/types.ts'
 import { TASK_STATUS } from '../consts-status.ts'
 import { updateTaskStatus } from '../services/functions-update-task-status.ts'

@@ -16,7 +16,7 @@ function App() {
   const { isAuthenticated, token, logout, isLoading } = useAuth();
   const [tasks, setTasks] = useState<Task[]>([])
   const [sortedTasks, setSortedTasks] = useState<Task[]>([])
-  const [setLastSuccessfulTasks] = useState<Task[]>([])
+  const [, setLastSuccessfulTasks] = useState<Task[]>([])
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
   useEffect(() => {
@@ -47,13 +47,10 @@ function App() {
     setTasks([...tasks, newTask])
   }
 
-  const handleTaskCompleted = (taskId: string, callback: (success: boolean) => void) => {
+  const handleTaskCompleted = (taskId: string) => {
     // Optimistically remove task
     setLastSuccessfulTasks(tasks)
     setTasks(tasks.filter(t => t._id !== taskId))
-    
-    // Callback will be called with success/failure by the component
-    setTimeout(() => callback(true), 0) // Simulate optimistic update
   }
 
   const handleTaskUncompleted = (task: Task, callback: (success: boolean) => void) => {

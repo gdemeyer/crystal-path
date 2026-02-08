@@ -3,7 +3,6 @@ import consts from "./consts.ts"
 const getTasks = async (token?: string) => {
     const headers: Record<string, string> = {
         "Content-Type": "application/json",
-        "Access-Control-Allow-Origin": "*",
     };
 
     if (token) {

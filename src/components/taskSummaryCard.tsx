@@ -6,7 +6,7 @@ import { updateTaskStatus } from '../services/functions-update-task-status.ts'
 interface TaskSummaryCardProps {
   task: Task
   token: string
-  onTaskCompleted: (taskId: string) => void
+  onTaskCompleted: (taskId: string) => (() => void)
 }
 
 export default function TaskSummaryCard({ task, token, onTaskCompleted }: TaskSummaryCardProps) {
@@ -23,8 +23,8 @@ export default function TaskSummaryCard({ task, token, onTaskCompleted }: TaskSu
     // Optimistically remove from list
     setIsLoading(true)
 
-    // Notify parent about optimistic completion; parent will handle rollback.
-    onTaskCompleted(task._id!)
+    // Get rollback function from parent
+    const rollback = onTaskCompleted(task._id!)
 
     // User clicked again to confirm
     updateTaskStatus(task._id!, TASK_STATUS.COMPLETED, token)
@@ -33,9 +33,10 @@ export default function TaskSummaryCard({ task, token, onTaskCompleted }: TaskSu
       })
       .catch((err) => {
         console.error('Failed to complete task:', err)
+        // Call rollback to restore the task
+        rollback()
         setIsLoading(false)
         setIsConfirming(false)
-        // Error will be handled by the parent component's rollback
       })
   }
 

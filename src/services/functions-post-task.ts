@@ -4,7 +4,6 @@ import consts from "./consts.ts"
 const postTask = async (task: Task, token?: string): Promise<Task> => {
     const headers: Record<string, string> = {
         "Content-Type": "application/json",
-        "Access-Control-Allow-Origin": "*",
     };
 
     if (token) {

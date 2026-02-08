@@ -34,22 +34,20 @@ export default function CompletedTasksMenu({ token, onTaskUncompleted }: Complet
     // Optimistically remove from completed list
     setCompletedTasks(completedTasks.filter(t => t._id !== task._id))
 
-    // Notify parent to add it to main list optimistically
-    onTaskUncompleted(task, (success: boolean) => {
-      if (!success) {
-        // Rollback if parent fails
-        console.log('here we are')
-        setCompletedTasks(originalTasks)
-      }
-    })
-
-    // Make API call in background without blocking UI
+    // Make API call
     try {
       await updateTaskStatus(task._id!, TASK_STATUS.NOT_STARTED, token)
+      
+      // Notify parent to refresh active tasks list
+      onTaskUncompleted(task, (success: boolean) => {
+        if (!success) {
+          // Rollback if parent refresh fails
+          setCompletedTasks(originalTasks)
+        }
+      })
     } catch (err) {
       console.error('Failed to uncomplete task:', err)
       // Rollback on error
-      console.log('poop')
       setCompletedTasks(originalTasks)
     }
   }

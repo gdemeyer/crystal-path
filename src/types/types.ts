@@ -1,9 +1,10 @@
 export interface Task {
-    title: String;
+    title: string;
     difficulty: number;
     impact: number;
     time: number;
     urgency: number;
+    score?: number;
     userId?: string;
     _id?: string;
     status?: string;

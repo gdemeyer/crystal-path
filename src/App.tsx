@@ -6,7 +6,6 @@ import TaskSummaryCardContainer from './components/taskSummaryCardBlock.tsx';
 import CompletedTasksMenu from './components/CompletedTasksMenu.tsx';
 import { Task } from './types/types.ts';
 import { TASK_STATUS } from './consts-status.ts';
-import sortTasks from './utils/algo.ts';
 import getFunctionsHealth from './services/functions-health.ts'
 import getTasks from './services/functions-get-tasks.ts'
 import { useAuth } from './hooks/useAuth.ts';
@@ -15,8 +14,7 @@ import LoginPage from './pages/LoginPage.tsx';
 function App() {
   const { isAuthenticated, token, logout, isLoading } = useAuth();
   const [tasks, setTasks] = useState<Task[]>([])
-  const [sortedTasks, setSortedTasks] = useState<Task[]>([])
-  const [, setLastSuccessfulTasks] = useState<Task[]>([])
+  const [lastSuccessfulTasks, setLastSuccessfulTasks] = useState<Task[]>([])
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
   useEffect(() => {
@@ -39,28 +37,48 @@ function App() {
     })
   }, [isAuthenticated, isLoading, token])
 
-  useEffect(() => {
-    setSortedTasks(sortTasks(tasks))
-  }, [tasks])
-
-  const handleTaskAdded = (newTask: Task) => {
-    setTasks([...tasks, newTask])
+  const handleTaskAdded = async () => {
+    // Re-fetch tasks to get the updated list with server-side sorting
+    if (!token) return;
+    
+    try {
+      const updatedTasks = await getTasks(token);
+      setTasks(updatedTasks);
+      setLastSuccessfulTasks(updatedTasks);
+    } catch (err) {
+      console.error('Failed to refresh tasks after add:', err);
+    }
   }
 
   const handleTaskCompleted = (taskId: string) => {
+    // Store the current state before optimistically removing
+    const currentTasks = tasks
+    
     // Optimistically remove task
-    setLastSuccessfulTasks(tasks)
     setTasks(tasks.filter(t => t._id !== taskId))
+    setLastSuccessfulTasks(tasks)
+    
+    // Return a rollback function that can be called on error
+    return () => {
+      // Restore tasks to the state before the optimistic update
+      setTasks(currentTasks)
+      setErrorMessage('Failed to complete task. Please try again.')
+    }
   }
 
-  const handleTaskUncompleted = (task: Task, callback: (success: boolean) => void) => {
-    // Optimistically add task back to active list with NOT_STARTED status
-    const uncompletedTask = { ...task, status: TASK_STATUS.NOT_STARTED, statusChanged: Date.now() }
-    setLastSuccessfulTasks(tasks)
-    setTasks([...tasks, uncompletedTask])
+  const handleTaskUncompleted = async (task: Task, callback: (success: boolean) => void) => {
+    // Re-fetch active tasks to get the updated list with server-side sorting
+    if (!token) return;
     
-    // Callback will be called with success/failure by the component
-    setTimeout(() => callback(true), 0) // Simulate optimistic update
+    try {
+      const updatedTasks = await getTasks(token);
+      setTasks(updatedTasks);
+      setLastSuccessfulTasks(updatedTasks);
+      callback(true);
+    } catch (err) {
+      console.error('Failed to refresh tasks after uncomplete:', err);
+      callback(false);
+    }
   }
 
   // Show loading state
@@ -90,7 +108,7 @@ function App() {
       )}
       <TaskEntryBlock onTaskAdded={handleTaskAdded} token={token || ''} />
       <TaskSummaryCardContainer>
-        {sortedTasks.map((task) => (
+        {tasks.map((task) => (
           <TaskSummaryCard
             key={task._id}
             task={task}

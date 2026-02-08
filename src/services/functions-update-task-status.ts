@@ -1,12 +1,13 @@
 import { TaskStatus } from '../consts-status.ts'
 import { Task } from '../types/types.ts'
+import consts from './consts.ts'
 
 export async function updateTaskStatus(
   taskId: string,
   status: TaskStatus,
   token: string
 ): Promise<Task> {
-  const response = await fetch(`${process.env.REACT_APP_FUNCTIONS_BASE_URL}update-task-status`, {
+  const response = await fetch(`${process.env.REACT_APP_FUNCTIONS_BASE_URL}${consts.routes.updateTaskStatus}`, {
     method: 'PATCH',
     headers: {
       'Content-Type': 'application/json',
@@ -29,7 +30,7 @@ export async function updateTaskStatus(
 }
 
 export async function getCompletedTasks(token: string): Promise<Task[]> {
-  const response = await fetch(`${process.env.REACT_APP_FUNCTIONS_BASE_URL}get-completed-tasks`, {
+  const response = await fetch(`${process.env.REACT_APP_FUNCTIONS_BASE_URL}${consts.routes.getCompletedTasks}`, {
     method: 'GET',
     headers: {
       'Authorization': `Bearer ${token}`,

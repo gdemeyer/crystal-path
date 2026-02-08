@@ -3,18 +3,18 @@ import { Task } from '../types/types';
 import postTask from '../services/functions-post-task.ts'
 
 interface TaskEntryBlockProps {
-  onTaskAdded?: (task: Task) => void;
+  onTaskAdded?: () => void | Promise<void>;
   token?: string;
 }
 
 export default function TaskEntryBlock({ onTaskAdded, token }: TaskEntryBlockProps) {
-  const [task, setTask] = useState<Task>()
   const [title, setTitle] = useState('')
   const [urgency, setUrgency] = useState(0)
   const [impact, setImpact] = useState(0)
   const [time, setTime] = useState(0)
   const [difficulty, setDifficulty] = useState(0)
   const [attemptedSubmit, setAttemptedSubmit] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   const isTitleEmpty = title === ''
   const isUrgencyEmpty = urgency === 0
@@ -23,34 +23,34 @@ export default function TaskEntryBlock({ onTaskAdded, token }: TaskEntryBlockPro
   const isDifficultyEmpty = difficulty === 0
   const hasErrors = isTitleEmpty || isUrgencyEmpty || isImpactEmpty || isTimeEmpty || isDifficultyEmpty
 
-  useEffect(() => {
-    console.log(title)
-    setTask({
-      title,
-      urgency,
-      impact,
-      time,
-      difficulty
-    })
-  }, [title, urgency, impact, time, difficulty])
-
-  function submitTask() {
+  async function submitTask() {
+    setError(null);
+    
     if (title === ''
       || urgency === 0
       || impact === 0
       || time === 0
       || difficulty === 0
-      || task === undefined
     ) {
       console.log('invalid input')
       setAttemptedSubmit(true)
       return;
     }
 
-    postTask(task, token)
-    .then((createdTask) => {
-      // Call the callback with the created task
-      onTaskAdded?.(createdTask)
+    // Build task object inline from current state
+    const taskToSubmit: Task = {
+      title,
+      urgency,
+      impact,
+      time,
+      difficulty
+    };
+
+    try {
+      await postTask(taskToSubmit, token);
+      
+      // Call the callback to refresh the task list
+      await onTaskAdded?.();
 
       // clear inputs
       setTitle('')
@@ -59,7 +59,10 @@ export default function TaskEntryBlock({ onTaskAdded, token }: TaskEntryBlockPro
       setTime(0)
       setDifficulty(0)
       setAttemptedSubmit(false)
-    })
+    } catch (err) {
+      console.error('Failed to create task:', err);
+      setError(err instanceof Error ? err.message : 'Failed to create task');
+    }
   }
 
   function onAddClick(e: React.MouseEvent<HTMLButtonElement>) {
@@ -140,6 +143,7 @@ export default function TaskEntryBlock({ onTaskAdded, token }: TaskEntryBlockPro
           <option value="13">impossible</option>
         </select>
       </div>
+      {error && <p className="error-text">{error}</p>}
       {attemptedSubmit && hasErrors && <p className="error-text">Please fill out all required fields</p>}
     </div>
   );

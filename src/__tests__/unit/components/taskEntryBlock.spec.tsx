@@ -13,56 +13,45 @@ describe('TaskEntryBlock component', () => {
     jest.clearAllMocks()
   })
 
-  it('renders inputs and selects', () => {
+  it('renders title input, sliders, and add button', () => {
     const { container } = render(<TaskEntryBlock />)
     const titleInput = container.querySelector('.task-title-input') as HTMLInputElement
-    const urgencySelect = container.querySelector('.task-urgency-select') as HTMLSelectElement
-    const impactSelect = container.querySelector('.task-impact-select') as HTMLSelectElement
-    const timeSelect = container.querySelector('.task-time-select') as HTMLSelectElement
-    const difficultySelect = container.querySelector('.task-difficulty-select') as HTMLSelectElement
+    const urgencySlider = container.querySelector('#urgency-slider') as HTMLInputElement
+    const impactSlider = container.querySelector('#impact-slider') as HTMLInputElement
+    const timeSlider = container.querySelector('#time-slider') as HTMLInputElement
+    const difficultySlider = container.querySelector('#difficulty-slider') as HTMLInputElement
     const addButton = container.querySelector('.task-add-button') as HTMLButtonElement
 
     expect(titleInput).toBeTruthy()
-    expect(urgencySelect).toBeTruthy()
-    expect(impactSelect).toBeTruthy()
-    expect(timeSelect).toBeTruthy()
-    expect(difficultySelect).toBeTruthy()
+    expect(urgencySlider).toBeTruthy()
+    expect(impactSlider).toBeTruthy()
+    expect(timeSlider).toBeTruthy()
+    expect(difficultySlider).toBeTruthy()
     expect(addButton).toBeTruthy()
   })
 
-  it('does not submit when inputs are invalid', () => {
+  it('does not submit when title is empty', () => {
     const { container } = render(<TaskEntryBlock />)
     const titleInput = container.querySelector('.task-title-input') as HTMLInputElement
     const addButton = container.querySelector('.task-add-button') as HTMLButtonElement
 
-    // no values populated -> should early-return
     fireEvent.click(addButton)
 
-    // TODO: this is a bad expect for the use case
     expect((titleInput as HTMLInputElement).value).toBe('')
   })
 
   it('calls onTaskAdded callback when task is submitted successfully', async () => {
     const mockPostTask = require('../../../services/functions-post-task.ts').default
     const mockCallback = jest.fn()
-    const createdTask = { title: 'Test', difficulty: 5, impact: 5, time: 5, urgency: 5 }
+    const createdTask = { title: 'Test', difficulty: 1, impact: 1, time: 1, urgency: 1 }
     mockPostTask.mockResolvedValueOnce(createdTask)
 
     const { container } = render(<TaskEntryBlock onTaskAdded={mockCallback} />)
-    
+
     const titleInput = container.querySelector('.task-title-input') as HTMLInputElement
-    const urgencySelect = container.querySelector('.task-urgency-select') as HTMLSelectElement
-    const impactSelect = container.querySelector('.task-impact-select') as HTMLSelectElement
-    const timeSelect = container.querySelector('.task-time-select') as HTMLSelectElement
-    const difficultySelect = container.querySelector('.task-difficulty-select') as HTMLSelectElement
     const addButton = container.querySelector('.task-add-button') as HTMLButtonElement
 
     fireEvent.change(titleInput, { target: { value: 'Test' } })
-    fireEvent.change(urgencySelect, { target: { value: '5' } })
-    fireEvent.change(impactSelect, { target: { value: '5' } })
-    fireEvent.change(timeSelect, { target: { value: '5' } })
-    fireEvent.change(difficultySelect, { target: { value: '5' } })
-
     fireEvent.click(addButton)
 
     await waitFor(() => {
@@ -72,51 +61,43 @@ describe('TaskEntryBlock component', () => {
 
   it('clears form after successful submission', async () => {
     const mockPostTask = require('../../../services/functions-post-task.ts').default
-    mockPostTask.mockResolvedValueOnce({ title: 'Test', difficulty: 5, impact: 5, time: 5, urgency: 5 })
+    mockPostTask.mockResolvedValueOnce({ title: 'Test', difficulty: 1, impact: 1, time: 1, urgency: 1 })
 
     const { container } = render(<TaskEntryBlock />)
-    
+
     const titleInput = container.querySelector('.task-title-input') as HTMLInputElement
-    const urgencySelect = container.querySelector('.task-urgency-select') as HTMLSelectElement
-    const impactSelect = container.querySelector('.task-impact-select') as HTMLSelectElement
-    const timeSelect = container.querySelector('.task-time-select') as HTMLSelectElement
-    const difficultySelect = container.querySelector('.task-difficulty-select') as HTMLSelectElement
+    const urgencySlider = container.querySelector('#urgency-slider') as HTMLInputElement
+    const impactSlider = container.querySelector('#impact-slider') as HTMLInputElement
+    const timeSlider = container.querySelector('#time-slider') as HTMLInputElement
+    const difficultySlider = container.querySelector('#difficulty-slider') as HTMLInputElement
     const addButton = container.querySelector('.task-add-button') as HTMLButtonElement
 
     fireEvent.change(titleInput, { target: { value: 'Test' } })
-    fireEvent.change(urgencySelect, { target: { value: '5' } })
-    fireEvent.change(impactSelect, { target: { value: '5' } })
-    fireEvent.change(timeSelect, { target: { value: '5' } })
-    fireEvent.change(difficultySelect, { target: { value: '5' } })
+    fireEvent.change(urgencySlider, { target: { value: '3' } })
+    fireEvent.change(impactSlider, { target: { value: '3' } })
+    fireEvent.change(timeSlider, { target: { value: '3' } })
+    fireEvent.change(difficultySlider, { target: { value: '3' } })
     fireEvent.click(addButton)
 
     await waitFor(() => {
       expect(titleInput.value).toBe('')
-      expect(urgencySelect.value).toBe('0')
-      expect(impactSelect.value).toBe('0')
-      expect(timeSelect.value).toBe('0')
-      expect(difficultySelect.value).toBe('0')
+      expect(urgencySlider.value).toBe('0')
+      expect(impactSlider.value).toBe('0')
+      expect(timeSlider.value).toBe('0')
+      expect(difficultySlider.value).toBe('0')
     })
   })
 
   it('submits on Enter key press in title input', async () => {
     const mockPostTask = require('../../../services/functions-post-task.ts').default
     const mockCallback = jest.fn()
-    mockPostTask.mockResolvedValueOnce({ title: 'Test', difficulty: 5, impact: 5, time: 5, urgency: 5 })
+    mockPostTask.mockResolvedValueOnce({ title: 'Test', difficulty: 1, impact: 1, time: 1, urgency: 1 })
 
     const { container } = render(<TaskEntryBlock onTaskAdded={mockCallback} />)
-    
+
     const titleInput = container.querySelector('.task-title-input') as HTMLInputElement
-    const urgencySelect = container.querySelector('.task-urgency-select') as HTMLSelectElement
-    const impactSelect = container.querySelector('.task-impact-select') as HTMLSelectElement
-    const timeSelect = container.querySelector('.task-time-select') as HTMLSelectElement
-    const difficultySelect = container.querySelector('.task-difficulty-select') as HTMLSelectElement
 
     fireEvent.change(titleInput, { target: { value: 'Test' } })
-    fireEvent.change(urgencySelect, { target: { value: '5' } })
-    fireEvent.change(impactSelect, { target: { value: '5' } })
-    fireEvent.change(timeSelect, { target: { value: '5' } })
-    fireEvent.change(difficultySelect, { target: { value: '5' } })
     fireEvent.keyDown(titleInput, { key: 'Enter' })
 
     await waitFor(() => {

@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen, waitFor, fireEvent } from '@testing-library/react'
 import App from '../../../App'
 import getTasks from '../../../services/functions-get-tasks'
 import getFunctionsHealth from '../../../services/functions-health'
@@ -39,7 +39,7 @@ describe('App component', () => {
     })
 
     render(<App />)
-    expect(screen.getByText('Loading...')).toBeInTheDocument()
+    expect(screen.getByText('Crystal Path')).toBeInTheDocument()
   })
 
   it('renders login page when not authenticated', () => {
@@ -96,8 +96,15 @@ describe('App component', () => {
     })
   })
 
-  it('displays logout button', async () => {
+  it('displays logout button inside the menu drawer', async () => {
     render(<App />)
+
+    // Wait for app to render, then open the menu drawer
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /toggle menu/i })).toBeInTheDocument()
+    })
+
+    fireEvent.click(screen.getByRole('button', { name: /toggle menu/i }))
 
     await waitFor(() => {
       expect(screen.getByText('Logout')).toBeInTheDocument()

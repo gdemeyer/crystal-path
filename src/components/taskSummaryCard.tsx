@@ -9,6 +9,13 @@ interface TaskSummaryCardProps {
   onTaskCompleted: (taskId: string) => (() => void)
 }
 
+function getPriorityColor(task: Task): string {
+  const score = task.urgency * task.impact
+  if (score >= 20) return '#c8954a' // warm amber — high priority
+  if (score >= 5)  return '#5b9ca8' // muted teal — medium
+  return '#7b8fa8'                  // steel slate — low
+}
+
 export default function TaskSummaryCard({ task, token, onTaskCompleted }: TaskSummaryCardProps) {
   const [isConfirming, setIsConfirming] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
@@ -16,24 +23,19 @@ export default function TaskSummaryCard({ task, token, onTaskCompleted }: TaskSu
   const handleCompleteClick = () => {
     if (!isConfirming) {
       setIsConfirming(true)
-      setTimeout(() => setIsConfirming(false), 3000) // Reset after 3 seconds
+      setTimeout(() => setIsConfirming(false), 3000)
       return
     }
 
-    // Optimistically remove from list
     setIsLoading(true)
-
-    // Get rollback function from parent
     const rollback = onTaskCompleted(task._id!)
 
-    // User clicked again to confirm
     updateTaskStatus(task._id!, TASK_STATUS.COMPLETED, token)
       .then(() => {
         setIsLoading(false)
       })
       .catch((err) => {
         console.error('Failed to complete task:', err)
-        // Call rollback to restore the task
         rollback()
         setIsLoading(false)
         setIsConfirming(false)
@@ -43,7 +45,10 @@ export default function TaskSummaryCard({ task, token, onTaskCompleted }: TaskSu
   const isCompleted = task.status === TASK_STATUS.COMPLETED
 
   return (
-    <div className="task-summary-card" key={task._id}>
+    <div
+      className="task-summary-card"
+      style={{ borderLeftColor: getPriorityColor(task) }}
+    >
       <div className="task-summary-card-content">
         <h4 className="task-summary-card-title">{task.title}</h4>
       </div>
@@ -54,9 +59,10 @@ export default function TaskSummaryCard({ task, token, onTaskCompleted }: TaskSu
           title={isConfirming ? 'Click again to confirm' : 'Mark as complete'}
           disabled={isLoading}
         >
-          {isLoading ? '...' : isConfirming ? '✓ Confirm?' : '○'}
+          {isLoading ? '…' : isConfirming ? '✓ Confirm?' : 'Done'}
         </button>
       )}
     </div>
   )
 }
+

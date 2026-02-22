@@ -2,6 +2,58 @@ import React, { useState } from 'react';
 import { Task } from '../types/types';
 import postTask from '../services/functions-post-task.ts'
 
+const FIBONACCI = [1, 2, 3, 5, 8, 13]
+
+const SLIDER_CONFIG = {
+  urgency: {
+    label: 'Urgency',
+    labels: ['Eventually', 'This Month', 'This Week', 'Tomorrow', 'Today', 'Immediately'],
+  },
+  impact: {
+    label: 'Impact',
+    labels: ['Minimal', 'Minor', 'Moderate', 'High', 'Very High', 'Extreme'],
+  },
+  time: {
+    label: 'Time Required',
+    labels: ['A few min', '< 30 min', '< 1 hr', '1â€“4 hr', '4â€“8 hr', '8+ hr'],
+  },
+  difficulty: {
+    label: 'Difficulty',
+    labels: ['Trivial', 'Easy', 'Average', 'Hard', 'Very Hard', 'Impossible'],
+  },
+}
+
+interface LabeledSliderProps {
+  id: string
+  label: string
+  valueLabel: string
+  index: number
+  onChange: (index: number) => void
+  onKeyDown?: (e: React.KeyboardEvent) => void
+}
+
+function LabeledSlider({ id, label, valueLabel, index, onChange, onKeyDown }: LabeledSliderProps) {
+  return (
+    <div className="slider-field">
+      <div className="slider-header">
+        <label htmlFor={id} className="slider-label">{label}</label>
+        <span className="slider-value-label">{valueLabel}</span>
+      </div>
+      <input
+        type="range"
+        id={id}
+        min={0}
+        max={5}
+        step={1}
+        value={index}
+        onChange={e => onChange(Number(e.target.value))}
+        onKeyDown={onKeyDown}
+        className="slider-input"
+      />
+    </div>
+  )
+}
+
 interface TaskEntryBlockProps {
   onTaskAdded?: () => void | Promise<void>;
   token?: string;
@@ -9,74 +61,58 @@ interface TaskEntryBlockProps {
 
 export default function TaskEntryBlock({ onTaskAdded, token }: TaskEntryBlockProps) {
   const [title, setTitle] = useState('')
-  const [urgency, setUrgency] = useState(0)
-  const [impact, setImpact] = useState(0)
-  const [time, setTime] = useState(0)
-  const [difficulty, setDifficulty] = useState(0)
+  const [urgencyIdx, setUrgencyIdx] = useState(0)
+  const [impactIdx, setImpactIdx] = useState(0)
+  const [timeIdx, setTimeIdx] = useState(0)
+  const [difficultyIdx, setDifficultyIdx] = useState(0)
   const [attemptedSubmit, setAttemptedSubmit] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  const isTitleEmpty = title === ''
-  const isUrgencyEmpty = urgency === 0
-  const isImpactEmpty = impact === 0
-  const isTimeEmpty = time === 0
-  const isDifficultyEmpty = difficulty === 0
-  const hasErrors = isTitleEmpty || isUrgencyEmpty || isImpactEmpty || isTimeEmpty || isDifficultyEmpty
+  const isTitleEmpty = title.trim() === ''
 
   async function submitTask() {
-    setError(null);
-    
-    if (isSubmitting) return;
+    setError(null)
 
-    if (title === ''
-      || urgency === 0
-      || impact === 0
-      || time === 0
-      || difficulty === 0
-    ) {
-      console.log('invalid input')
+    if (isSubmitting) return
+
+    if (isTitleEmpty) {
       setAttemptedSubmit(true)
-      return;
+      return
     }
 
-    // Build task object inline from current state
     const taskToSubmit: Task = {
-      title,
-      urgency,
-      impact,
-      time,
-      difficulty
-    };
+      title: title.trim(),
+      urgency: FIBONACCI[urgencyIdx],
+      impact: FIBONACCI[impactIdx],
+      time: FIBONACCI[timeIdx],
+      difficulty: FIBONACCI[difficultyIdx],
+    }
 
     try {
-      setIsSubmitting(true);
-      await postTask(taskToSubmit, token);
-      
-      // Call the callback to refresh the task list
-      await onTaskAdded?.();
-
-      // clear inputs
+      setIsSubmitting(true)
+      await postTask(taskToSubmit, token)
+      await onTaskAdded?.()
       setTitle('')
-      setUrgency(0)
-      setImpact(0)
-      setTime(0)
-      setDifficulty(0)
+      setUrgencyIdx(0)
+      setImpactIdx(0)
+      setTimeIdx(0)
+      setDifficultyIdx(0)
       setAttemptedSubmit(false)
     } catch (err) {
-      console.error('Failed to create task:', err);
-      setError(err instanceof Error ? err.message : 'Failed to create task');
+      console.error('Failed to create task:', err)
+      setError(err instanceof Error ? err.message : 'Failed to create task')
     } finally {
-      setIsSubmitting(false);
+      setIsSubmitting(false)
     }
   }
 
-  function onAddClick(e: React.MouseEvent<HTMLButtonElement>) {
+  function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     submitTask()
   }
 
-  function onTitleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
+  function handleKeyDown(e: React.KeyboardEvent) {
     if (e.key === 'Enter') {
       e.preventDefault()
       submitTask()
@@ -84,75 +120,56 @@ export default function TaskEntryBlock({ onTaskAdded, token }: TaskEntryBlockPro
   }
 
   return (
-    <div className="task-entry-block">
-      <div>
-        <input 
+    <form className="task-entry-block" onSubmit={handleSubmit} noValidate>
+      <div className="task-entry-title-row">
+        <input
           className={`task-title-input ${attemptedSubmit && isTitleEmpty ? 'error' : ''}`}
-          value={title} 
-          onChange={e => setTitle(e.target.value)} 
-          onKeyDown={onTitleKeyDown}
-          placeholder="Title"
+          value={title}
+          onChange={e => setTitle(e.target.value)}
+          onKeyDown={handleKeyDown}
+          placeholder="What needs to be done?"
+          autoComplete="off"
         />
-        <button className="task-add-button" onClick={onAddClick} disabled={isSubmitting}>
-          {isSubmitting ? '...' : '+'}
+        <button className="task-add-button" type="submit" disabled={isSubmitting}>
+          {isSubmitting ? '...' : 'Add'}
         </button>
       </div>
-      <div>
-        <select 
-          className={`task-select task-urgency-select ${attemptedSubmit && hasErrors ? 'error' : ''}`}
-          value={urgency} 
-          onChange={e => setUrgency(+e.target.value)}
-        >
-          <option value="0" disabled>urgency</option>
-          <option value="1">eventually</option>
-          <option value="2">this month</option>
-          <option value="3">this week</option>
-          <option value="5">tomorrow</option>
-          <option value="8">today</option>
-          <option value="13">immediately</option>
-        </select>
-        <select 
-          className={`task-select task-impact-select ${attemptedSubmit && hasErrors ? 'error' : ''}`}
-          value={impact} 
-          onChange={e => setImpact(+e.target.value)}
-        >
-          <option value="0" disabled>impact</option>
-          <option value="1">none</option>
-          <option value="2">minor</option>
-          <option value="3">moderate</option>
-          <option value="5">high</option>
-          <option value="8">very high</option>
-          <option value="13">extreme</option>
-        </select>
-        <select 
-          className={`task-select task-time-select ${attemptedSubmit && hasErrors ? 'error' : ''}`}
-          value={time} 
-          onChange={e => setTime(+e.target.value)}
-        >
-          <option value="0" disabled>time</option>
-          <option value="1">a few min</option>
-          <option value="2">&lt;30 min</option>
-          <option value="3">&lt;1 hr</option>
-          <option value="5">1-4 hr</option>
-          <option value="8">4-8 hr</option>
-          <option value="13">&gt;8 hr</option>
-        </select>
-        <select 
-          className={`task-select task-difficulty-select ${attemptedSubmit && hasErrors ? 'error' : ''}`}
-          value={difficulty} 
-          onChange={e => setDifficulty(+e.target.value)}
-        >
-          <option value="0" disabled>difficulty</option>
-          <option value="1">trivial</option>
-          <option value="2">easy</option>
-          <option value="3">average</option>
-          <option value="5">hard</option>
-          <option value="8">very hard</option>
-          <option value="13">impossible</option>
-        </select>
+      <div className="task-slider-grid">
+        <LabeledSlider
+          id="urgency-slider"
+          label={SLIDER_CONFIG.urgency.label}
+          valueLabel={SLIDER_CONFIG.urgency.labels[urgencyIdx]}
+          index={urgencyIdx}
+          onChange={setUrgencyIdx}
+          onKeyDown={handleKeyDown}
+        />
+        <LabeledSlider
+          id="impact-slider"
+          label={SLIDER_CONFIG.impact.label}
+          valueLabel={SLIDER_CONFIG.impact.labels[impactIdx]}
+          index={impactIdx}
+          onChange={setImpactIdx}
+          onKeyDown={handleKeyDown}
+        />
+        <LabeledSlider
+          id="time-slider"
+          label={SLIDER_CONFIG.time.label}
+          valueLabel={SLIDER_CONFIG.time.labels[timeIdx]}
+          index={timeIdx}
+          onChange={setTimeIdx}
+          onKeyDown={handleKeyDown}
+        />
+        <LabeledSlider
+          id="difficulty-slider"
+          label={SLIDER_CONFIG.difficulty.label}
+          valueLabel={SLIDER_CONFIG.difficulty.labels[difficultyIdx]}
+          index={difficultyIdx}
+          onChange={setDifficultyIdx}
+          onKeyDown={handleKeyDown}
+        />
       </div>
       {error && <p className="error-text">{error}</p>}
-      {attemptedSubmit && hasErrors && <p className="error-text">Please fill out all required fields</p>}
-    </div>
-  );
+      {attemptedSubmit && isTitleEmpty && <p className="error-text">Please enter a task title</p>}
+    </form>
+  )
 }

@@ -157,7 +157,7 @@ describe('CompletedTasksMenu component', () => {
       resolveGetTasks = resolve
     }))
     
-    render(<CompletedTasksMenu token={mockToken} onTaskUncompleted={mockOnTaskUncompleted} />)
+    const { container } = render(<CompletedTasksMenu token={mockToken} onTaskUncompleted={mockOnTaskUncompleted} />)
     
     const hamburgerButton = screen.getByRole('button', { name: /toggle menu/i })
     fireEvent.click(hamburgerButton)
@@ -165,16 +165,17 @@ describe('CompletedTasksMenu component', () => {
     const backlogHeader = screen.getByRole('button', { name: /backlog/i })
     fireEvent.click(backlogHeader)
 
-    // Should show loading state
+    // Should show skeleton loading rows
     await waitFor(() => {
-      expect(screen.getByText('Loading backlog...')).toBeInTheDocument()
+      const skeletonRows = container.querySelectorAll('.skeleton-row')
+      expect(skeletonRows.length).toBeGreaterThan(0)
     })
 
     resolveGetTasks(mockBacklogTasks)
 
-    // Loading should disappear
+    // Skeleton should disappear and tasks should appear
     await waitFor(() => {
-      expect(screen.queryByText('Loading backlog...')).not.toBeInTheDocument()
+      expect(screen.getByText('Backlog Task 1')).toBeInTheDocument()
     })
   })
 

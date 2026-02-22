@@ -1,8 +1,9 @@
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import TaskEntryBlock from './components/taskEntryBlock.tsx';
 import './App.css';
 import TaskSummaryCard from './components/taskSummaryCard.tsx';
 import TaskSummaryCardContainer from './components/taskSummaryCardBlock.tsx';
+import TaskCardSkeleton from './components/TaskCardSkeleton.tsx';
 import CompletedTasksMenu from './components/CompletedTasksMenu.tsx';
 import { Task } from './types/types.ts';
 import getFunctionsHealth from './services/functions-health.ts'
@@ -16,6 +17,8 @@ function App() {
   const [, setLastSuccessfulTasks] = useState<Task[]>([])
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const [taskRefreshKey, setTaskRefreshKey] = useState(0)
+  const [isLoadingTasks, setIsLoadingTasks] = useState(false)
+  const completedCountRef = useRef(0)
 
   // Helper to get today's date in ISO format (YYYY-MM-DD)
   const getTodayDate = () => new Date().toISOString().slice(0, 10);
@@ -23,18 +26,19 @@ function App() {
   useEffect(() => {
     if (!isAuthenticated || isLoading || !token) return;
 
-    getFunctionsHealth().then(res => {
-      // Health check success
-    }).catch(err => {
+    getFunctionsHealth().then(() => {}).catch(err => {
       console.error('Health check failed:', err)
     })
 
+    setIsLoadingTasks(true)
     getTasks(token, { view: 'today', date: getTodayDate() }).then(res => {
       setTasks(res)
       setLastSuccessfulTasks(res)
+      setIsLoadingTasks(false)
     }).catch(err => {
       console.error('Failed to fetch tasks:', err)
       setTasks([])
+      setIsLoadingTasks(false)
     })
   }, [isAuthenticated, isLoading, token])
 
@@ -56,7 +60,8 @@ function App() {
   const handleTaskCompleted = (taskId: string) => {
     // Store the current state before optimistically removing
     const currentTasks = tasks
-    
+    completedCountRef.current += 1
+
     // Optimistically remove task
     setTasks(tasks.filter(t => t._id !== taskId))
     setLastSuccessfulTasks(tasks)
@@ -87,9 +92,17 @@ function App() {
     }
   }
 
-  // Show loading state
+  // Show auth loading state
   if (isLoading) {
-    return <div className="App" style={{color: '#cfcfcf'}}>Loading...</div>;
+    return (
+      <div className="App">
+        <div className="empty-state-container">
+          <div className="empty-state-icon">✦</div>
+          <p className="empty-state-title">Crystal Path</p>
+          <p className="empty-state-subtitle">Loading…</p>
+        </div>
+      </div>
+    );
   }
 
   // Show login page if not authenticated
@@ -102,8 +115,12 @@ function App() {
       <div className="app-header">
         <h1>Crystal Path</h1>
         <div className="header-right">
-          <CompletedTasksMenu token={token || ''} onTaskUncompleted={handleTaskUncompleted} refreshKey={taskRefreshKey} />
-          <button onClick={logout} className="logout-button">Logout</button>
+          <CompletedTasksMenu
+            token={token || ''}
+            onTaskUncompleted={handleTaskUncompleted}
+            refreshKey={taskRefreshKey}
+            onLogout={logout}
+          />
         </div>
       </div>
       {errorMessage && (
@@ -114,14 +131,38 @@ function App() {
       )}
       <TaskEntryBlock onTaskAdded={handleTaskAdded} token={token || ''} />
       <TaskSummaryCardContainer>
-        {tasks.map((task) => (
-          <TaskSummaryCard
-            key={task._id}
-            task={task}
-            token={token || ''}
-            onTaskCompleted={handleTaskCompleted}
-          />
-        ))}
+        {isLoadingTasks ? (
+          <>
+            <TaskCardSkeleton />
+            <TaskCardSkeleton />
+            <TaskCardSkeleton />
+          </>
+        ) : tasks.length === 0 ? (
+          <div className={`empty-state-container ${completedCountRef.current > 0 ? 'empty-state-celebration' : ''}`}>
+            <div className="empty-state-icon">
+              {completedCountRef.current > 0 ? '🎉' : '✦'}
+            </div>
+            <p className="empty-state-title">
+              {completedCountRef.current > 0
+                ? 'All done! Great work today.'
+                : 'Nothing scheduled yet.'}
+            </p>
+            <p className="empty-state-subtitle">
+              {completedCountRef.current > 0
+                ? `You completed ${completedCountRef.current} task${completedCountRef.current !== 1 ? 's' : ''} — enjoy the rest of your day.`
+                : 'Add your first task above to get started.'}
+            </p>
+          </div>
+        ) : (
+          tasks.map((task) => (
+            <TaskSummaryCard
+              key={task._id}
+              task={task}
+              token={token || ''}
+              onTaskCompleted={handleTaskCompleted}
+            />
+          ))
+        )}
       </TaskSummaryCardContainer>
     </div>
   );

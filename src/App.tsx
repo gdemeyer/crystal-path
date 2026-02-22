@@ -15,19 +15,21 @@ function App() {
   const [tasks, setTasks] = useState<Task[]>([])
   const [, setLastSuccessfulTasks] = useState<Task[]>([])
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const [taskRefreshKey, setTaskRefreshKey] = useState(0)
+
+  // Helper to get today's date in ISO format (YYYY-MM-DD)
+  const getTodayDate = () => new Date().toISOString().slice(0, 10);
 
   useEffect(() => {
     if (!isAuthenticated || isLoading || !token) return;
 
-    console.log('useEffect')
     getFunctionsHealth().then(res => {
-      console.log(res)
+      // Health check success
     }).catch(err => {
       console.error('Health check failed:', err)
     })
 
-    getTasks(token).then(res => {
-      console.log('getTasks response:', res)
+    getTasks(token, { view: 'today', date: getTodayDate() }).then(res => {
       setTasks(res)
       setLastSuccessfulTasks(res)
     }).catch(err => {
@@ -41,9 +43,11 @@ function App() {
     if (!token) return;
     
     try {
-      const updatedTasks = await getTasks(token);
+      const updatedTasks = await getTasks(token, { view: 'today', date: getTodayDate() });
       setTasks(updatedTasks);
       setLastSuccessfulTasks(updatedTasks);
+      // Invalidate backlog cache so it re-fetches with new scheduling
+      setTaskRefreshKey(prev => prev + 1);
     } catch (err) {
       console.error('Failed to refresh tasks after add:', err);
     }
@@ -56,6 +60,9 @@ function App() {
     // Optimistically remove task
     setTasks(tasks.filter(t => t._id !== taskId))
     setLastSuccessfulTasks(tasks)
+    
+    // Invalidate side menu caches so backlog/completed lists refresh
+    setTaskRefreshKey(prev => prev + 1)
     
     // Return a rollback function that can be called on error
     return () => {
@@ -70,7 +77,7 @@ function App() {
     if (!token) return;
     
     try {
-      const updatedTasks = await getTasks(token);
+      const updatedTasks = await getTasks(token, { view: 'today', date: getTodayDate() });
       setTasks(updatedTasks);
       setLastSuccessfulTasks(updatedTasks);
       callback(true);
@@ -95,7 +102,7 @@ function App() {
       <div className="app-header">
         <h1>Crystal Path</h1>
         <div className="header-right">
-          <CompletedTasksMenu token={token || ''} onTaskUncompleted={handleTaskUncompleted} />
+          <CompletedTasksMenu token={token || ''} onTaskUncompleted={handleTaskUncompleted} refreshKey={taskRefreshKey} />
           <button onClick={logout} className="logout-button">Logout</button>
         </div>
       </div>

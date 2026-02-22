@@ -18,7 +18,7 @@ describe('functions-post-task', () => {
     process.env.REACT_APP_FUNCTIONS_BASE_URL = 'https://api.example.com/'
     const task = { title: 'T', difficulty: 5, impact: 5, time: 5, urgency: 5 }
     const mockResp = { success: true }
-    ;(global.fetch as jest.Mock).mockResolvedValueOnce({ json: () => Promise.resolve(mockResp) })
+    ;(global.fetch as jest.Mock).mockResolvedValueOnce({ ok: true, json: () => Promise.resolve(mockResp) })
 
     const res = await postTask(task as any)
 
@@ -31,15 +31,15 @@ describe('functions-post-task', () => {
     expect(res).toEqual(mockResp)
   })
 
-  it('returns task with score from server response', async () => {
+  it('returns task from server response', async () => {
     process.env.REACT_APP_FUNCTIONS_BASE_URL = 'https://api.example.com/'
     const task = { title: 'Test', difficulty: 5, impact: 5, time: 5, urgency: 5 }
-    const mockTaskWithScore = { ...task, score: 42.5, _id: '123' }
-    ;(global.fetch as jest.Mock).mockResolvedValueOnce({ json: () => Promise.resolve(mockTaskWithScore) })
+    const mockTaskResponse = { ...task, _id: '123' }
+    ;(global.fetch as jest.Mock).mockResolvedValueOnce({ ok: true, json: () => Promise.resolve(mockTaskResponse) })
 
     const res = await postTask(task as any)
 
-    expect(res).toEqual(mockTaskWithScore)
-    expect(res.score).toBeDefined()
+    expect(res).toEqual(mockTaskResponse)
+    expect(res._id).toBeDefined()
   })
 })

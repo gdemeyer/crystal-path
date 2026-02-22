@@ -1,6 +1,11 @@
 import consts from "./consts.ts"
 
-const getTasks = async (token?: string) => {
+interface GetTasksOptions {
+    view?: 'today' | 'backlog';
+    date?: string;
+}
+
+const getTasks = async (token?: string, options?: GetTasksOptions) => {
     const headers: Record<string, string> = {
         "Content-Type": "application/json",
     };
@@ -9,7 +14,19 @@ const getTasks = async (token?: string) => {
         headers["Authorization"] = `Bearer ${token}`;
     }
 
-    const response = await fetch(`${process.env.REACT_APP_FUNCTIONS_BASE_URL}${consts.routes.getTasks}`, {
+    let url = `${process.env.REACT_APP_FUNCTIONS_BASE_URL}${consts.routes.getTasks}`;
+    
+    // Add query parameters if provided
+    if (options?.view) {
+        const params = new URLSearchParams();
+        params.append('view', options.view);
+        if (options.date) {
+            params.append('date', options.date);
+        }
+        url += `?${params.toString()}`;
+    }
+
+    const response = await fetch(url, {
         method: "GET",
         headers,
     })

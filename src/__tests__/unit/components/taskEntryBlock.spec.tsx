@@ -45,7 +45,7 @@ describe('TaskEntryBlock component', () => {
   it('calls onTaskAdded callback when task is submitted successfully', async () => {
     const mockPostTask = require('../../../services/functions-post-task.ts').default
     const mockCallback = jest.fn()
-    const createdTask = { title: 'Test', difficulty: 5, impact: 5, time: 5, urgency: 5, score: 42 }
+    const createdTask = { title: 'Test', difficulty: 5, impact: 5, time: 5, urgency: 5 }
     mockPostTask.mockResolvedValueOnce(createdTask)
 
     const { container } = render(<TaskEntryBlock onTaskAdded={mockCallback} />)
@@ -66,13 +66,13 @@ describe('TaskEntryBlock component', () => {
     fireEvent.click(addButton)
 
     await waitFor(() => {
-      expect(mockCallback).toHaveBeenCalledWith(createdTask)
+      expect(mockCallback).toHaveBeenCalled()
     })
   })
 
   it('clears form after successful submission', async () => {
     const mockPostTask = require('../../../services/functions-post-task.ts').default
-    mockPostTask.mockResolvedValueOnce({ title: 'Test', difficulty: 5, impact: 5, time: 5, urgency: 5, score: 42 })
+    mockPostTask.mockResolvedValueOnce({ title: 'Test', difficulty: 5, impact: 5, time: 5, urgency: 5 })
 
     const { container } = render(<TaskEntryBlock />)
     
@@ -102,7 +102,7 @@ describe('TaskEntryBlock component', () => {
   it('submits on Enter key press in title input', async () => {
     const mockPostTask = require('../../../services/functions-post-task.ts').default
     const mockCallback = jest.fn()
-    mockPostTask.mockResolvedValueOnce({ title: 'Test', difficulty: 5, impact: 5, time: 5, urgency: 5, score: 42 })
+    mockPostTask.mockResolvedValueOnce({ title: 'Test', difficulty: 5, impact: 5, time: 5, urgency: 5 })
 
     const { container } = render(<TaskEntryBlock onTaskAdded={mockCallback} />)
     

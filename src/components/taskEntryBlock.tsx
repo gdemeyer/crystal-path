@@ -15,6 +15,7 @@ export default function TaskEntryBlock({ onTaskAdded, token }: TaskEntryBlockPro
   const [difficulty, setDifficulty] = useState(0)
   const [attemptedSubmit, setAttemptedSubmit] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const isTitleEmpty = title === ''
   const isUrgencyEmpty = urgency === 0
@@ -26,6 +27,8 @@ export default function TaskEntryBlock({ onTaskAdded, token }: TaskEntryBlockPro
   async function submitTask() {
     setError(null);
     
+    if (isSubmitting) return;
+
     if (title === ''
       || urgency === 0
       || impact === 0
@@ -47,6 +50,7 @@ export default function TaskEntryBlock({ onTaskAdded, token }: TaskEntryBlockPro
     };
 
     try {
+      setIsSubmitting(true);
       await postTask(taskToSubmit, token);
       
       // Call the callback to refresh the task list
@@ -62,6 +66,8 @@ export default function TaskEntryBlock({ onTaskAdded, token }: TaskEntryBlockPro
     } catch (err) {
       console.error('Failed to create task:', err);
       setError(err instanceof Error ? err.message : 'Failed to create task');
+    } finally {
+      setIsSubmitting(false);
     }
   }
 
@@ -87,7 +93,9 @@ export default function TaskEntryBlock({ onTaskAdded, token }: TaskEntryBlockPro
           onKeyDown={onTitleKeyDown}
           placeholder="Title"
         />
-        <button className="task-add-button" onClick={onAddClick}>+</button>
+        <button className="task-add-button" onClick={onAddClick} disabled={isSubmitting}>
+          {isSubmitting ? '...' : '+'}
+        </button>
       </div>
       <div>
         <select 

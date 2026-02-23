@@ -220,4 +220,94 @@ describe('App component', () => {
 
     Date.prototype.toISOString = realToISOString
   })
+
+  describe('auto-redirect on auth failure', () => {
+    it('should call logout when getTasks returns a 401 error', async () => {
+      const mockLogout = jest.fn()
+      ;(useAuth as jest.Mock).mockReturnValue({
+        isAuthenticated: true,
+        token: 'expired-token',
+        logout: mockLogout,
+        isLoading: false
+      })
+
+      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation()
+
+      // Simulate a 401 error from getTasks
+      const authError = new Error('Authentication failed')
+      ;(authError as any).status = 401
+      authError.name = 'AuthenticationError'
+      ;(getTasks as jest.Mock).mockRejectedValue(authError)
+
+      render(<App />)
+
+      await waitFor(() => {
+        expect(mockLogout).toHaveBeenCalled()
+      })
+
+      consoleErrorSpy.mockRestore()
+    })
+
+    it('should NOT call logout for non-auth errors (e.g. 500)', async () => {
+      const mockLogout = jest.fn()
+      ;(useAuth as jest.Mock).mockReturnValue({
+        isAuthenticated: true,
+        token: 'valid-token',
+        logout: mockLogout,
+        isLoading: false
+      })
+
+      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation()
+
+      // Simulate a 500 server error
+      const serverError = new Error('Server error')
+      ;(serverError as any).status = 500
+      ;(getTasks as jest.Mock).mockRejectedValue(serverError)
+
+      render(<App />)
+
+      await waitFor(() => {
+        expect(consoleErrorSpy).toHaveBeenCalled()
+      })
+
+      expect(mockLogout).not.toHaveBeenCalled()
+
+      consoleErrorSpy.mockRestore()
+    })
+
+    it('should show login page after logout is triggered by auth failure', async () => {
+      let currentAuthState = {
+        isAuthenticated: true,
+        token: 'expired-token',
+        logout: jest.fn(),
+        isLoading: false
+      }
+
+      currentAuthState.logout = jest.fn(() => {
+        // Simulate the auth state changing after logout
+        currentAuthState = {
+          ...currentAuthState,
+          isAuthenticated: false,
+          token: null,
+        }
+        ;(useAuth as jest.Mock).mockReturnValue(currentAuthState)
+      })
+
+      ;(useAuth as jest.Mock).mockReturnValue(currentAuthState)
+      jest.spyOn(console, 'error').mockImplementation()
+
+      const authError = new Error('Authentication failed')
+      authError.name = 'AuthenticationError'
+      ;(authError as any).status = 401
+      ;(getTasks as jest.Mock).mockRejectedValue(authError)
+
+      render(<App />)
+
+      await waitFor(() => {
+        expect(currentAuthState.logout).toHaveBeenCalled()
+      })
+
+      jest.restoreAllMocks()
+    })
+  })
 })

@@ -15,7 +15,7 @@ const SLIDER_CONFIG = {
   },
   time: {
     label: 'Time Required',
-    labels: ['A few min', '< 30 min', '< 1 hr', '1â€“4 hr', '4â€“8 hr', '8+ hr'],
+    labels: ['A few min', '< 30 min', '< 1 hr', '1-4 hr', '4â€“8 hr', '8+ hr'],
   },
   difficulty: {
     label: 'Difficulty',

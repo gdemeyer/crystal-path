@@ -131,4 +131,37 @@ describe('functions-get-tasks', () => {
 
     await expect(getTasks()).rejects.toThrow('Failed to fetch tasks: Not Found')
   })
+
+  it('throws AuthenticationError with status 401 when server returns 401', async () => {
+    process.env.REACT_APP_FUNCTIONS_BASE_URL = 'https://api.example.com/'
+    ;(global.fetch as jest.Mock).mockResolvedValueOnce({
+      ok: false,
+      status: 401,
+      statusText: 'Unauthorized'
+    })
+
+    try {
+      await getTasks('expired-token')
+      fail('Expected an error to be thrown')
+    } catch (err: any) {
+      expect(err.name).toBe('AuthenticationError')
+      expect(err.status).toBe(401)
+    }
+  })
+
+  it('throws a regular error (not AuthenticationError) for non-401 failures', async () => {
+    process.env.REACT_APP_FUNCTIONS_BASE_URL = 'https://api.example.com/'
+    ;(global.fetch as jest.Mock).mockResolvedValueOnce({
+      ok: false,
+      status: 500,
+      statusText: 'Internal Server Error'
+    })
+
+    try {
+      await getTasks('valid-token')
+      fail('Expected an error to be thrown')
+    } catch (err: any) {
+      expect(err.name).not.toBe('AuthenticationError')
+    }
+  })
 })

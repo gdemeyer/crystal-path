@@ -673,6 +673,8 @@ body {
   .task-slider-grid {
     grid-template-columns: 1fr;
     gap: 0.875rem;
+    width: 80dvw;
+    margin-inline: auto;
   }
 
   .task-summary-card-block {

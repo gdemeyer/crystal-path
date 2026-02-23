@@ -12,6 +12,8 @@ export interface AuthContextType {
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+    const TWO_WEEKS_MS = 14 * 24 * 60 * 60 * 1000;
+
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [token, setToken] = useState<string | null>(null);
     const [userId, setUserId] = useState<string | null>(null);
@@ -21,12 +23,24 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     useEffect(() => {
         const storedToken = localStorage.getItem('auth_token');
         const storedUserId = localStorage.getItem('user_id');
+        const loginTime = localStorage.getItem('auth_login_time');
 
         if (storedToken) {
-            setToken(storedToken);
-            setIsAuthenticated(true);
-            if (storedUserId) {
-                setUserId(storedUserId);
+            // Check if login is within 2-week window
+            const isExpired = !loginTime || (Date.now() - Number(loginTime)) > TWO_WEEKS_MS;
+
+            if (isExpired) {
+                // Session expired — clear everything
+                localStorage.removeItem('auth_token');
+                localStorage.removeItem('user_id');
+                localStorage.removeItem('auth_login_time');
+                sessionStorage.clear();
+            } else {
+                setToken(storedToken);
+                setIsAuthenticated(true);
+                if (storedUserId) {
+                    setUserId(storedUserId);
+                }
             }
         }
 
@@ -49,6 +63,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
         // Store in localStorage
         localStorage.setItem('auth_token', newToken);
+        localStorage.setItem('auth_login_time', String(Date.now()));
         if (extractedUserId) {
             localStorage.setItem('user_id', extractedUserId);
         }
@@ -62,6 +77,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         // Clear localStorage
         localStorage.removeItem('auth_token');
         localStorage.removeItem('user_id');
+        localStorage.removeItem('auth_login_time');
 
         // Clear any cached data
         sessionStorage.clear();

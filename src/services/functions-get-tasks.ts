@@ -1,4 +1,5 @@
 import consts from "./consts.ts"
+import { AuthenticationError } from "./errors.ts"
 
 interface GetTasksOptions {
     view?: 'today' | 'backlog';
@@ -32,6 +33,9 @@ const getTasks = async (token?: string, options?: GetTasksOptions) => {
     })
 
     if (!response.ok) {
+        if (response.status === 401) {
+            throw new AuthenticationError();
+        }
         throw new Error(`Failed to fetch tasks: ${response.statusText}`);
     }
 

@@ -15,6 +15,11 @@ declare global {
     }
 }
 
+const isLocalDev = () => {
+    const hostname = window.location.hostname;
+    return hostname === 'localhost' || hostname === '127.0.0.1';
+};
+
 const LoginPage: React.FC = () => {
     const { login } = useAuth();
     const [error, setError] = useState<string>('');
@@ -93,35 +98,24 @@ const LoginPage: React.FC = () => {
                         </div>
                     )}
 
-                    {/* Show demo login for local development */}
-                    {process.env.REACT_APP_AUTH_ENABLED === 'false' && (
-                        <div className="login-section">
-                            <button
-                                onClick={handleDemoLogin}
-                                className="demo-login-button"
-                            >
-                                Use Demo Account
-                            </button>
-                            <p className="demo-info">
-                                Development mode: Using demo authentication
-                            </p>
-                        </div>
-                    )}
-
-                    {/* Optional: Show both if demo is explicitly enabled */}
-                    {process.env.REACT_APP_AUTH_ENABLED === 'true' && (
-                        <div className="login-divider">or</div>
-                    )}
-
-                    {process.env.REACT_APP_AUTH_ENABLED === 'true' && (
-                        <div className="login-section">
-                            <button
-                                onClick={handleDemoLogin}
-                                className="demo-login-button secondary"
-                            >
-                                Demo Account (Dev Only)
-                            </button>
-                        </div>
+                    {/* Show demo login only in local development */}
+                    {isLocalDev() && (
+                        <>
+                            {process.env.REACT_APP_AUTH_ENABLED !== 'false' && (
+                                <div className="login-divider">or</div>
+                            )}
+                            <div className="login-section">
+                                <button
+                                    onClick={handleDemoLogin}
+                                    className="demo-login-button"
+                                >
+                                    Use Demo Account
+                                </button>
+                                <p className="demo-info">
+                                    Development mode: Using demo authentication
+                                </p>
+                            </div>
+                        </>
                     )}
                 </div>
 

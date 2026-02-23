@@ -1,6 +1,7 @@
 import { TaskStatus } from '../consts-status.ts'
 import { Task } from '../types/types.ts'
 import consts from './consts.ts'
+import { AuthenticationError } from './errors.ts'
 
 export async function updateTaskStatus(
   taskId: string,
@@ -22,6 +23,9 @@ export async function updateTaskStatus(
   console.log(response)
 
   if (!response.ok) {
+    if (response.status === 401) {
+      throw new AuthenticationError();
+    }
     const errorData = await response.json().catch(() => ({}))
     throw new Error(errorData.error || 'Failed to update task status')
   }
@@ -38,6 +42,9 @@ export async function getCompletedTasks(token: string): Promise<Task[]> {
   })
 
   if (!response.ok) {
+    if (response.status === 401) {
+      throw new AuthenticationError();
+    }
     console.error('Failed to get completed tasks:', response.statusText)
     return []
   }

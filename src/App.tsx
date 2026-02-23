@@ -10,6 +10,7 @@ import getFunctionsHealth from './services/functions-health.ts'
 import getTasks from './services/functions-get-tasks.ts'
 import { useAuth } from './hooks/useAuth.ts';
 import LoginPage from './pages/LoginPage.tsx';
+import { AuthenticationError } from './services/errors.ts';
 
 function App() {
   const { isAuthenticated, token, logout, isLoading } = useAuth();
@@ -37,6 +38,10 @@ function App() {
       setIsLoadingTasks(false)
     }).catch(err => {
       console.error('Failed to fetch tasks:', err)
+      if (err instanceof AuthenticationError || err.name === 'AuthenticationError') {
+        logout();
+        return;
+      }
       setTasks([])
       setIsLoadingTasks(false)
     })
@@ -54,6 +59,9 @@ function App() {
       setTaskRefreshKey(prev => prev + 1);
     } catch (err) {
       console.error('Failed to refresh tasks after add:', err);
+      if (err instanceof AuthenticationError || (err as any).name === 'AuthenticationError') {
+        logout();
+      }
     }
   }
 
@@ -88,6 +96,9 @@ function App() {
       callback(true);
     } catch (err) {
       console.error('Failed to refresh tasks after uncomplete:', err);
+      if (err instanceof AuthenticationError || (err as any).name === 'AuthenticationError') {
+        logout();
+      }
       callback(false);
     }
   }

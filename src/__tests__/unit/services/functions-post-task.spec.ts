@@ -42,4 +42,39 @@ describe('functions-post-task', () => {
     expect(res).toEqual(mockTaskResponse)
     expect(res._id).toBeDefined()
   })
+
+  it('throws AuthenticationError with status 401 when server returns 401', async () => {
+    process.env.REACT_APP_FUNCTIONS_BASE_URL = 'https://api.example.com/'
+    const task = { title: 'T', difficulty: 5, impact: 5, time: 5, urgency: 5 }
+    ;(global.fetch as jest.Mock).mockResolvedValueOnce({
+      ok: false,
+      status: 401,
+      statusText: 'Unauthorized'
+    })
+
+    try {
+      await postTask(task as any, 'expired-token')
+      fail('Expected an error to be thrown')
+    } catch (err: any) {
+      expect(err.name).toBe('AuthenticationError')
+      expect(err.status).toBe(401)
+    }
+  })
+
+  it('throws a regular error (not AuthenticationError) for non-401 failures', async () => {
+    process.env.REACT_APP_FUNCTIONS_BASE_URL = 'https://api.example.com/'
+    const task = { title: 'T', difficulty: 5, impact: 5, time: 5, urgency: 5 }
+    ;(global.fetch as jest.Mock).mockResolvedValueOnce({
+      ok: false,
+      status: 400,
+      statusText: 'Bad Request'
+    })
+
+    try {
+      await postTask(task as any, 'valid-token')
+      fail('Expected an error to be thrown')
+    } catch (err: any) {
+      expect(err.name).not.toBe('AuthenticationError')
+    }
+  })
 })

@@ -1,5 +1,6 @@
 import { Task } from "../types/types.ts"
 import consts from "./consts.ts"
+import { AuthenticationError } from "./errors.ts"
 
 const postTask = async (task: Task, token?: string): Promise<Task> => {
     const headers: Record<string, string> = {
@@ -17,6 +18,9 @@ const postTask = async (task: Task, token?: string): Promise<Task> => {
     })
 
     if (!response.ok) {
+        if (response.status === 401) {
+            throw new AuthenticationError();
+        }
         throw new Error(`Failed to create task: ${response.statusText}`);
     }
 

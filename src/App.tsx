@@ -45,7 +45,7 @@ function App() {
       setTasks([])
       setIsLoadingTasks(false)
     })
-  }, [isAuthenticated, isLoading, token])
+  }, [isAuthenticated, isLoading, token, logout])
 
   const handleTaskAdded = async () => {
     // Re-fetch tasks to get the updated list with server-side sorting

@@ -1,4 +1,4 @@
-import React, { createContext, useEffect, useState, ReactNode } from 'react';
+import React, { createContext, useCallback, useEffect, useState, ReactNode } from 'react';
 
 export interface AuthContextType {
     isAuthenticated: boolean;
@@ -11,9 +11,9 @@ export interface AuthContextType {
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-    const TWO_WEEKS_MS = 14 * 24 * 60 * 60 * 1000;
+const TWO_WEEKS_MS = 14 * 24 * 60 * 60 * 1000;
 
+export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [token, setToken] = useState<string | null>(null);
     const [userId, setUserId] = useState<string | null>(null);
@@ -47,7 +47,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         setIsLoading(false);
     }, []);
 
-    const login = (newToken: string) => {
+    const login = useCallback((newToken: string) => {
         // Extract userId from token if possible (for demo tokens: dummy-token-{userId})
         let extractedUserId = null;
         if (newToken.startsWith('dummy-token-')) {
@@ -67,9 +67,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         if (extractedUserId) {
             localStorage.setItem('user_id', extractedUserId);
         }
-    };
+    }, []);
 
-    const logout = () => {
+    const logout = useCallback(() => {
         setToken(null);
         setIsAuthenticated(false);
         setUserId(null);
@@ -81,7 +81,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
         // Clear any cached data
         sessionStorage.clear();
-    };
+    }, []);
 
     return (
         <AuthContext.Provider value={{

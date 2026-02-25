@@ -21,8 +21,15 @@ function App() {
   const [isLoadingTasks, setIsLoadingTasks] = useState(false)
   const completedCountRef = useRef(0)
 
-  // Helper to get today's date in ISO format (YYYY-MM-DD)
-  const getTodayDate = () => new Date().toISOString().slice(0, 10);
+  // Helper to get today's date in the user's local timezone (YYYY-MM-DD)
+  const getLocalDate = () => {
+    const now = new Date();
+    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+  };
+
+  // IANA timezone identifier (e.g. "America/New_York"); updates if user travels
+  const getTimezone = () =>
+    Intl.DateTimeFormat().resolvedOptions().timeZone;
 
   useEffect(() => {
     if (!isAuthenticated || isLoading || !token) return;
@@ -32,7 +39,7 @@ function App() {
     })
 
     setIsLoadingTasks(true)
-    getTasks(token, { view: 'today', date: getTodayDate() }).then(res => {
+    getTasks(token, { view: 'today', date: getLocalDate(), timezone: getTimezone() }).then(res => {
       setTasks(res)
       setLastSuccessfulTasks(res)
       setIsLoadingTasks(false)
@@ -52,7 +59,7 @@ function App() {
     if (!token) return;
     
     try {
-      const updatedTasks = await getTasks(token, { view: 'today', date: getTodayDate() });
+      const updatedTasks = await getTasks(token, { view: 'today', date: getLocalDate(), timezone: getTimezone() });
       setTasks(updatedTasks);
       setLastSuccessfulTasks(updatedTasks);
       // Invalidate backlog cache so it re-fetches with new scheduling
@@ -90,7 +97,7 @@ function App() {
     if (!token) return;
     
     try {
-      const updatedTasks = await getTasks(token, { view: 'today', date: getTodayDate() });
+      const updatedTasks = await getTasks(token, { view: 'today', date: getLocalDate(), timezone: getTimezone() });
       setTasks(updatedTasks);
       setLastSuccessfulTasks(updatedTasks);
       callback(true);

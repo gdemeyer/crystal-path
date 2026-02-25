@@ -4,6 +4,7 @@ import { AuthenticationError } from "./errors.ts"
 interface GetTasksOptions {
     view?: 'today' | 'backlog';
     date?: string;
+    timezone?: string;
 }
 
 const getTasks = async (token?: string, options?: GetTasksOptions) => {
@@ -23,6 +24,9 @@ const getTasks = async (token?: string, options?: GetTasksOptions) => {
         params.append('view', options.view);
         if (options.date) {
             params.append('date', options.date);
+        }
+        if (options.timezone) {
+            params.append('timezone', options.timezone);
         }
         url += `?${params.toString()}`;
     }

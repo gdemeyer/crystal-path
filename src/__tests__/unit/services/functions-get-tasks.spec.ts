@@ -103,6 +103,22 @@ describe('functions-get-tasks', () => {
     expect(res).toEqual(mockData)
   })
 
+  it('appends timezone query param when provided', async () => {
+    process.env.REACT_APP_FUNCTIONS_BASE_URL = 'https://api.example.com/'
+    const mockData = [{ id: 4, title: 'task4' }]
+    ;(global.fetch as jest.Mock).mockResolvedValueOnce({ 
+      ok: true,
+      json: () => Promise.resolve(mockData) 
+    })
+
+    const res = await getTasks('token', { view: 'today', date: '2026-02-15', timezone: 'America/New_York' })
+
+    expect(global.fetch).toHaveBeenCalledTimes(1)
+    const url = (global.fetch as jest.Mock).mock.calls[0][0]
+    expect(url).toBe(`${process.env.REACT_APP_FUNCTIONS_BASE_URL}get-tasks?view=today&date=2026-02-15&timezone=America%2FNew_York`)
+    expect(res).toEqual(mockData)
+  })
+
   it('returns empty array when response is not an array', async () => {
     process.env.REACT_APP_FUNCTIONS_BASE_URL = 'https://api.example.com/'
     const consoleSpy = jest.spyOn(console, 'error').mockImplementation()

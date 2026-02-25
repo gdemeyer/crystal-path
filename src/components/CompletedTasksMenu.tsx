@@ -34,7 +34,13 @@ export default function CompletedTasksMenu({ token, onTaskUncompleted, refreshKe
   const [lastRefreshKey, setLastRefreshKey] = useState(refreshKey)
   const [confirmingTaskId, setConfirmingTaskId] = useState<string | null>(null)
 
-  const getTodayDate = () => new Date().toISOString().slice(0, 10)
+  const getLocalDate = () => {
+    const now = new Date();
+    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+  };
+
+  const getTimezone = () =>
+    Intl.DateTimeFormat().resolvedOptions().timeZone;
 
   if (refreshKey !== lastRefreshKey) {
     setLastRefreshKey(refreshKey)
@@ -43,7 +49,7 @@ export default function CompletedTasksMenu({ token, onTaskUncompleted, refreshKe
 
     if (isBacklogExpanded) {
       setIsLoadingBacklog(true)
-      getTasks(token, { view: 'backlog', date: getTodayDate() })
+      getTasks(token, { view: 'backlog', date: getLocalDate(), timezone: getTimezone() })
         .then(tasks => { setBacklogTasks(tasks); setBacklogLoaded(true) })
         .catch(err => console.error('Failed to refresh backlog tasks:', err))
         .finally(() => setIsLoadingBacklog(false))
@@ -71,7 +77,7 @@ export default function CompletedTasksMenu({ token, onTaskUncompleted, refreshKe
     if (newExpanded && !backlogLoaded) {
       setIsLoadingBacklog(true)
       try {
-        const tasks = await getTasks(token, { view: 'backlog', date: getTodayDate() })
+        const tasks = await getTasks(token, { view: 'backlog', date: getLocalDate(), timezone: getTimezone() })
         setBacklogTasks(tasks)
         setBacklogLoaded(true)
       } catch (err) {

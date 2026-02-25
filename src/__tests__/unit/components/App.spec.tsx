@@ -64,19 +64,20 @@ describe('App component', () => {
   })
 
   it('calls getTasks with view=today and date on mount', async () => {
-    const mockDate = '2026-02-10'
-    jest.spyOn(Date.prototype, 'toISOString').mockReturnValue(mockDate + 'T00:00:00.000Z')
+    jest.useFakeTimers()
+    jest.setSystemTime(new Date(2026, 1, 10, 14, 0, 0)) // Feb 10 2026 14:00 local
 
     render(<App />)
 
     await waitFor(() => {
       expect(getTasks).toHaveBeenCalledWith('test-token', {
         view: 'today',
-        date: mockDate
+        date: '2026-02-10',
+        timezone: expect.any(String)
       })
     })
 
-    jest.restoreAllMocks()
+    jest.useRealTimers()
   })
 
   it('renders today tasks from getTasks response', async () => {
@@ -204,21 +205,21 @@ describe('App component', () => {
     expect(getTasks).not.toHaveBeenCalled()
   })
 
-  it('uses current date when calling getTasks', async () => {
-    const realToISOString = Date.prototype.toISOString
-    const mockToISOString = jest.fn(() => '2026-02-10T12:34:56.789Z')
-    Date.prototype.toISOString = mockToISOString
+  it('uses current local date and timezone when calling getTasks', async () => {
+    jest.useFakeTimers()
+    jest.setSystemTime(new Date(2026, 1, 10, 22, 0, 0)) // Feb 10 2026 22:00 local
 
     render(<App />)
 
     await waitFor(() => {
       expect(getTasks).toHaveBeenCalledWith('test-token', {
         view: 'today',
-        date: '2026-02-10'
+        date: '2026-02-10',
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
       })
     })
 
-    Date.prototype.toISOString = realToISOString
+    jest.useRealTimers()
   })
 
   describe('auto-redirect on auth failure', () => {

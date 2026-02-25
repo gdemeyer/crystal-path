@@ -4,7 +4,8 @@ const consts = {
         getTasks: "get-tasks",
         postTask: "post-task",
         updateTaskStatus: "update-task-status",
-        getCompletedTasks: "get-completed-tasks"
+        getCompletedTasks: "get-completed-tasks",
+        authenticate: "authenticate"
     }
 }
 

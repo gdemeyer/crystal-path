@@ -24,10 +24,10 @@ const LoginPage: React.FC = () => {
     const { login } = useAuth();
     const [error, setError] = useState<string>('');
 
-    const handleGoogleResponse = useCallback((response: { credential: string }) => {
+    const handleGoogleResponse = useCallback(async (response: { credential: string }) => {
         try {
             setError('');
-            login(response.credential);
+            await login(response.credential);
             // Redirect to main app (handled by App.tsx)
         } catch (err) {
             setError('Failed to authenticate with Google');
@@ -69,11 +69,11 @@ const LoginPage: React.FC = () => {
         };
     }, [handleGoogleResponse]);
 
-    const handleDemoLogin = () => {
+    const handleDemoLogin = async () => {
         try {
             setError('');
             const demoToken = `dummy-token-${Date.now()}`;
-            login(demoToken);
+            await login(demoToken);
             // Redirect to main app (handled by App.tsx)
         } catch (err) {
             setError('Failed to authenticate with demo account');

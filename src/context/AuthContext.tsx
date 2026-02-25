@@ -1,10 +1,11 @@
 import React, { createContext, useCallback, useEffect, useState, ReactNode } from 'react';
+import authenticate from '../services/functions-authenticate.ts';
 
 export interface AuthContextType {
     isAuthenticated: boolean;
     token: string | null;
     userId: string | null;
-    login: (token: string) => void;
+    login: (googleToken: string) => Promise<void>;
     logout: () => void;
     isLoading: boolean;
 }
@@ -47,25 +48,27 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         setIsLoading(false);
     }, []);
 
-    const login = useCallback((newToken: string) => {
-        // Extract userId from token if possible (for demo tokens: dummy-token-{userId})
-        let extractedUserId = null;
-        if (newToken.startsWith('dummy-token-')) {
-            extractedUserId = newToken.replace('dummy-token-', '');
-        } else {
-            // For real Google tokens, userId will be set by backend on first API call
-            extractedUserId = 'google-user';
-        }
+    const login = useCallback(async (googleToken: string) => {
+        try {
+            // Exchange Google/demo token for a backend-issued JWT
+            const { token: backendToken, userId: backendUserId } = await authenticate(googleToken);
 
-        setToken(newToken);
-        setIsAuthenticated(true);
-        setUserId(extractedUserId);
+            setToken(backendToken);
+            setIsAuthenticated(true);
+            setUserId(backendUserId);
 
-        // Store in localStorage
-        localStorage.setItem('auth_token', newToken);
-        localStorage.setItem('auth_login_time', String(Date.now()));
-        if (extractedUserId) {
-            localStorage.setItem('user_id', extractedUserId);
+            // Store backend JWT in localStorage
+            localStorage.setItem('auth_token', backendToken);
+            localStorage.setItem('auth_login_time', String(Date.now()));
+            if (backendUserId) {
+                localStorage.setItem('user_id', backendUserId);
+            }
+        } catch (error) {
+            console.error('Authentication failed:', error);
+            // Ensure we're in a clean state
+            setToken(null);
+            setIsAuthenticated(false);
+            setUserId(null);
         }
     }, []);
 

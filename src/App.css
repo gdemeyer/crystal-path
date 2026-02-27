@@ -60,11 +60,22 @@ body {
   box-sizing: border-box;
 }
 
-.app-header h1 {
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.app-logo {
+  width: 50px;
+  height: 50px;
+  object-fit: contain;
+}
+
+.app-name {
   color: #cfcfcf;
   margin: 0;
   font-size: 1.4rem;
-  font-weight: 700;
   letter-spacing: 0.01em;
 }
 

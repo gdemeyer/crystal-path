@@ -131,7 +131,10 @@ function App() {
   return (
     <div className="App">
       <div className="app-header">
-        <h1>Crystal Path</h1>
+        <div className="header-left">
+          <img src={`${process.env.PUBLIC_URL}/crystal_path_logo.svg`} alt="Crystal Path logo" className="app-logo" />
+          <span className="app-name">Crystal Path</span>
+        </div>
         <div className="header-right">
           <CompletedTasksMenu
             token={token || ''}

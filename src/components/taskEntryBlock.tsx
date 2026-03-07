@@ -68,6 +68,8 @@ export default function TaskEntryBlock({ onTaskAdded, token }: TaskEntryBlockPro
   const [attemptedSubmit, setAttemptedSubmit] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [advancedOpen, setAdvancedOpen] = useState(false)
+  const [repeatOnComplete, setRepeatOnComplete] = useState(false)
 
   const isTitleEmpty = title.trim() === ''
 
@@ -87,6 +89,7 @@ export default function TaskEntryBlock({ onTaskAdded, token }: TaskEntryBlockPro
       impact: FIBONACCI[impactIdx],
       time: FIBONACCI[timeIdx],
       difficulty: FIBONACCI[difficultyIdx],
+      ...(repeatOnComplete && { repeatOnComplete: true }),
     }
 
     try {
@@ -99,6 +102,7 @@ export default function TaskEntryBlock({ onTaskAdded, token }: TaskEntryBlockPro
       setTimeIdx(0)
       setDifficultyIdx(0)
       setAttemptedSubmit(false)
+      setRepeatOnComplete(false)
     } catch (err) {
       console.error('Failed to create task:', err)
       setError(err instanceof Error ? err.message : 'Failed to create task')
@@ -167,6 +171,34 @@ export default function TaskEntryBlock({ onTaskAdded, token }: TaskEntryBlockPro
           onChange={setDifficultyIdx}
           onKeyDown={handleKeyDown}
         />
+      </div>
+      <div className="advanced-accordion">
+        <div 
+          className="accordion-header" 
+          onClick={() => setAdvancedOpen(!advancedOpen)}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault()
+              setAdvancedOpen(!advancedOpen)
+            }
+          }}
+        >
+          <span>Advanced</span>
+          <span className="accordion-icon">{advancedOpen ? '▼' : '▶'}</span>
+        </div>
+        <div className="accordion-content" style={{ display: advancedOpen ? 'block' : 'none' }}>
+          <label className="checkbox-label">
+            <input
+              type="checkbox"
+              className="repeat-on-complete-checkbox"
+              checked={repeatOnComplete}
+              onChange={(e) => setRepeatOnComplete(e.target.checked)}
+            />
+            Clone on completion
+          </label>
+        </div>
       </div>
       {error && <p className="error-text">{error}</p>}
       {attemptedSubmit && isTitleEmpty && <p className="error-text">Please enter a task title</p>}

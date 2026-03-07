@@ -8,6 +8,9 @@ export interface Task {
     _id?: string;
     status?: string;
     statusChanged?: number;
+    repeatOnComplete?: boolean;
+    repeatingOriginId?: string;
+    eligibleAt?: number;
 }
 
 export const isTask = (obj: unknown): obj is Task => {

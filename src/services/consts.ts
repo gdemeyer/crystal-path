@@ -3,6 +3,7 @@ const consts = {
         health: "health",
         getTasks: "get-tasks",
         postTask: "post-task",
+        editTask: "edit-task",
         updateTaskStatus: "update-task-status",
         getCompletedTasks: "get-completed-tasks",
         authenticate: "authenticate"

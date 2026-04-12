@@ -19,6 +19,7 @@ function App() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const [taskRefreshKey, setTaskRefreshKey] = useState(0)
   const [isLoadingTasks, setIsLoadingTasks] = useState(false)
+  const [editingTask, setEditingTask] = useState<Task | undefined>(undefined)
   const completedCountRef = useRef(0)
 
   // Helper to get today's date in the user's local timezone (YYYY-MM-DD)
@@ -110,6 +111,31 @@ function App() {
     }
   }
 
+  const handleEditTask = (task: Task) => {
+    setEditingTask(task)
+    window.scrollTo(0, 0)
+  }
+
+  const handleEditComplete = async () => {
+    setEditingTask(undefined)
+    if (!token) return;
+    try {
+      const updatedTasks = await getTasks(token, { view: 'today', date: getLocalDate(), timezone: getTimezone() });
+      setTasks(updatedTasks);
+      setLastSuccessfulTasks(updatedTasks);
+      setTaskRefreshKey(prev => prev + 1);
+    } catch (err) {
+      console.error('Failed to refresh tasks after edit:', err);
+      if (err instanceof AuthenticationError || (err as any).name === 'AuthenticationError') {
+        logout();
+      }
+    }
+  }
+
+  const handleEditCancelled = () => {
+    setEditingTask(undefined)
+  }
+
   // Show auth loading state
   if (isLoading) {
     return (
@@ -150,7 +176,13 @@ function App() {
           <button onClick={() => setErrorMessage(null)} className="error-close">✕</button>
         </div>
       )}
-      <TaskEntryBlock onTaskAdded={handleTaskAdded} token={token || ''} />
+      <TaskEntryBlock
+        onTaskAdded={handleTaskAdded}
+        token={token || ''}
+        editingTask={editingTask}
+        onEditComplete={handleEditComplete}
+        onEditCancelled={handleEditCancelled}
+      />
       <TaskSummaryCardContainer>
         {isLoadingTasks ? (
           <>
@@ -181,6 +213,7 @@ function App() {
               task={task}
               token={token || ''}
               onTaskCompleted={handleTaskCompleted}
+              onEditTask={handleEditTask}
             />
           ))
         )}

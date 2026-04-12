@@ -91,6 +91,16 @@ export default function TaskEntryBlock({ onTaskAdded, token, editingTask, onEdit
       setAdvancedOpen(editingTask.repeatOnComplete === true)
       setError(null)
       setAttemptedSubmit(false)
+    } else {
+      setTitle('')
+      setUrgencyIdx(0)
+      setImpactIdx(0)
+      setTimeIdx(0)
+      setDifficultyIdx(0)
+      setRepeatOnComplete(false)
+      setAdvancedOpen(false)
+      setError(null)
+      setAttemptedSubmit(false)
     }
   }, [editingTask])
 

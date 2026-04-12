@@ -8,6 +8,10 @@ import { useAuth } from '../../../hooks/useAuth'
 jest.mock('../../../services/functions-get-tasks')
 jest.mock('../../../services/functions-health')
 jest.mock('../../../hooks/useAuth')
+jest.mock('../../../services/functions-edit-task', () => ({
+  __esModule: true,
+  default: jest.fn()
+}))
 
 describe('App component', () => {
   const mockTodayTasks = [
@@ -17,6 +21,7 @@ describe('App component', () => {
 
   beforeEach(() => {
     jest.clearAllMocks()
+    window.scrollTo = jest.fn()
     
     // Default mock: authenticated user
     ;(useAuth as jest.Mock).mockReturnValue({
@@ -309,6 +314,102 @@ describe('App component', () => {
       })
 
       jest.restoreAllMocks()
+    })
+  })
+
+  describe('edit task flow', () => {
+    it('shows Save button after clicking Edit on a task card', async () => {
+      render(<App />)
+
+      await waitFor(() => {
+        expect(screen.getByText('Today Task 1')).toBeInTheDocument()
+      })
+
+      // Click the menu button on the first card
+      const menuButtons = document.querySelectorAll('.card-menu-button')
+      expect(menuButtons.length).toBeGreaterThan(0)
+      fireEvent.click(menuButtons[0])
+
+      // Click Edit
+      fireEvent.click(screen.getByText('Edit'))
+
+      // Form should now show Save instead of Add
+      await waitFor(() => {
+        expect(screen.getByText('Save')).toBeInTheDocument()
+      })
+    })
+
+    it('populates form with task data when Edit is clicked', async () => {
+      render(<App />)
+
+      await waitFor(() => {
+        expect(screen.getByText('Today Task 1')).toBeInTheDocument()
+      })
+
+      const menuButtons = document.querySelectorAll('.card-menu-button')
+      fireEvent.click(menuButtons[0])
+      fireEvent.click(screen.getByText('Edit'))
+
+      await waitFor(() => {
+        const titleInput = document.querySelector('.task-title-input') as HTMLInputElement
+        expect(titleInput.value).toBe('Today Task 1')
+      })
+    })
+
+    it('shows Cancel button in edit mode and clears on cancel', async () => {
+      render(<App />)
+
+      await waitFor(() => {
+        expect(screen.getByText('Today Task 1')).toBeInTheDocument()
+      })
+
+      const menuButtons = document.querySelectorAll('.card-menu-button')
+      fireEvent.click(menuButtons[0])
+      fireEvent.click(screen.getByText('Edit'))
+
+      await waitFor(() => {
+        expect(screen.getByText('Cancel')).toBeInTheDocument()
+      })
+
+      // Click cancel — form should revert to Add mode
+      fireEvent.click(screen.getByText('Cancel'))
+
+      await waitFor(() => {
+        expect(screen.getByText('Add')).toBeInTheDocument()
+        const titleInput = document.querySelector('.task-title-input') as HTMLInputElement
+        expect(titleInput.value).toBe('')
+      })
+    })
+
+    it('re-fetches tasks after successful edit', async () => {
+      const editTask = require('../../../services/functions-edit-task').default
+      editTask.mockResolvedValueOnce(mockTodayTasks[0])
+
+      render(<App />)
+
+      await waitFor(() => {
+        expect(screen.getByText('Today Task 1')).toBeInTheDocument()
+      })
+
+      // Clear initial getTasks calls
+      ;(getTasks as jest.Mock).mockClear()
+
+      const menuButtons = document.querySelectorAll('.card-menu-button')
+      fireEvent.click(menuButtons[0])
+      fireEvent.click(screen.getByText('Edit'))
+
+      await waitFor(() => {
+        expect(screen.getByText('Save')).toBeInTheDocument()
+      })
+
+      // Submit the edit form
+      const saveButton = screen.getByText('Save')
+      fireEvent.click(saveButton)
+
+      await waitFor(() => {
+        // Should re-fetch tasks after edit
+        expect(getTasks).toHaveBeenCalledWith('test-token', expect.objectContaining({ view: 'today' }))
+      })
     })
   })
 })

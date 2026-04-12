@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Task } from '../types/types';
 import postTask from '../services/functions-post-task.ts'
+import editTask from '../services/functions-edit-task.ts'
 
 const FIBONACCI = [1, 2, 3, 5, 8, 13]
 
@@ -57,9 +58,17 @@ function LabeledSlider({ id, label, valueLabel, index, onChange, onKeyDown }: La
 interface TaskEntryBlockProps {
   onTaskAdded?: () => void | Promise<void>;
   token?: string;
+  editingTask?: Task;
+  onEditComplete?: () => void | Promise<void>;
+  onEditCancelled?: () => void;
 }
 
-export default function TaskEntryBlock({ onTaskAdded, token }: TaskEntryBlockProps) {
+function fibonacciIndex(value: number): number {
+  const idx = FIBONACCI.indexOf(value)
+  return idx >= 0 ? idx : 0
+}
+
+export default function TaskEntryBlock({ onTaskAdded, token, editingTask, onEditComplete, onEditCancelled }: TaskEntryBlockProps) {
   const [title, setTitle] = useState('')
   const [urgencyIdx, setUrgencyIdx] = useState(0)
   const [impactIdx, setImpactIdx] = useState(0)
@@ -70,6 +79,22 @@ export default function TaskEntryBlock({ onTaskAdded, token }: TaskEntryBlockPro
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [advancedOpen, setAdvancedOpen] = useState(false)
   const [repeatOnComplete, setRepeatOnComplete] = useState(false)
+
+  useEffect(() => {
+    if (editingTask) {
+      setTitle(editingTask.title)
+      setUrgencyIdx(fibonacciIndex(editingTask.urgency))
+      setImpactIdx(fibonacciIndex(editingTask.impact))
+      setTimeIdx(fibonacciIndex(editingTask.time))
+      setDifficultyIdx(fibonacciIndex(editingTask.difficulty))
+      setRepeatOnComplete(editingTask.repeatOnComplete ?? false)
+      setAdvancedOpen(editingTask.repeatOnComplete === true)
+      setError(null)
+      setAttemptedSubmit(false)
+    }
+  }, [editingTask])
+
+  const isEditing = !!editingTask
 
   const isTitleEmpty = title.trim() === ''
 
@@ -94,8 +119,13 @@ export default function TaskEntryBlock({ onTaskAdded, token }: TaskEntryBlockPro
 
     try {
       setIsSubmitting(true)
-      await postTask(taskToSubmit, token)
-      await onTaskAdded?.()
+      if (isEditing) {
+        await editTask(editingTask!._id!, taskToSubmit, token!)
+        await onEditComplete?.()
+      } else {
+        await postTask(taskToSubmit, token)
+        await onTaskAdded?.()
+      }
       setTitle('')
       setUrgencyIdx(0)
       setImpactIdx(0)
@@ -135,8 +165,13 @@ export default function TaskEntryBlock({ onTaskAdded, token }: TaskEntryBlockPro
           autoComplete="off"
         />
         <button className="task-add-button" type="submit" disabled={isSubmitting}>
-          {isSubmitting ? '...' : 'Add'}
+          {isSubmitting ? '...' : isEditing ? 'Save' : 'Add'}
         </button>
+        {isEditing && (
+          <button className="task-cancel-button" type="button" onClick={onEditCancelled}>
+            Cancel
+          </button>
+        )}
       </div>
       <div className="task-slider-grid">
         <LabeledSlider

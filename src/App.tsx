@@ -167,6 +167,7 @@ function App() {
             onTaskUncompleted={handleTaskUncompleted}
             refreshKey={taskRefreshKey}
             onLogout={logout}
+            onEditTask={handleEditTask}
           />
         </div>
       </div>

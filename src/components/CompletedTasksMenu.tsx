@@ -9,6 +9,7 @@ interface CompletedTasksMenuProps {
   onTaskUncompleted: (task: Task, callback: (success: boolean) => void) => void
   refreshKey?: number
   onLogout?: () => void
+  onEditTask?: (task: Task) => void
 }
 
 function DrawerSkeleton() {
@@ -21,7 +22,7 @@ function DrawerSkeleton() {
   )
 }
 
-export default function CompletedTasksMenu({ token, onTaskUncompleted, refreshKey, onLogout }: CompletedTasksMenuProps) {
+export default function CompletedTasksMenu({ token, onTaskUncompleted, refreshKey, onLogout, onEditTask }: CompletedTasksMenuProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [backlogTasks, setBacklogTasks] = useState<Task[]>([])
   const [completedTasks, setCompletedTasks] = useState<Task[]>([])
@@ -200,6 +201,18 @@ export default function CompletedTasksMenu({ token, onTaskUncompleted, refreshKe
                             <div className="completed-task-content">
                               <h4>{task.title}</h4>
                             </div>
+                            {onEditTask && (
+                              <button
+                                className="undo-button"
+                                onClick={() => {
+                                  setIsOpen(false)
+                                  onEditTask(task)
+                                }}
+                                title="Edit task"
+                              >
+                                Edit
+                              </button>
+                            )}
                             <button
                               className={`undo-button ${confirmingTaskId === task._id ? 'confirming' : ''}`}
                               onClick={() => handleCompleteBacklogTask(task)}

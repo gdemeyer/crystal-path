@@ -343,4 +343,103 @@ describe('CompletedTasksMenu component', () => {
 
     consoleErrorSpy.mockRestore()
   })
+
+  describe('edit from backlog', () => {
+    it('shows Edit button on backlog tasks', async () => {
+      ;(getTasks as jest.Mock).mockResolvedValueOnce(mockBacklogTasks)
+
+      render(
+        <CompletedTasksMenu
+          token={mockToken}
+          onTaskUncompleted={mockOnTaskUncompleted}
+          onEditTask={jest.fn()}
+        />
+      )
+
+      fireEvent.click(screen.getByRole('button', { name: /toggle menu/i }))
+      fireEvent.click(screen.getByRole('button', { name: /backlog/i }))
+
+      await waitFor(() => {
+        expect(screen.getByText('Backlog Task 1')).toBeInTheDocument()
+      })
+
+      const editButtons = screen.getAllByTitle('Edit task')
+      expect(editButtons).toHaveLength(2)
+    })
+
+    it('calls onEditTask when Edit button clicked on backlog task', async () => {
+      ;(getTasks as jest.Mock).mockResolvedValueOnce(mockBacklogTasks)
+      const mockOnEditTask = jest.fn()
+
+      render(
+        <CompletedTasksMenu
+          token={mockToken}
+          onTaskUncompleted={mockOnTaskUncompleted}
+          onEditTask={mockOnEditTask}
+        />
+      )
+
+      fireEvent.click(screen.getByRole('button', { name: /toggle menu/i }))
+      fireEvent.click(screen.getByRole('button', { name: /backlog/i }))
+
+      await waitFor(() => {
+        expect(screen.getByText('Backlog Task 1')).toBeInTheDocument()
+      })
+
+      const editButtons = screen.getAllByTitle('Edit task')
+      fireEvent.click(editButtons[0])
+
+      expect(mockOnEditTask).toHaveBeenCalledWith(
+        expect.objectContaining({ _id: '1', title: 'Backlog Task 1' })
+      )
+    })
+
+    it('closes drawer when Edit is clicked', async () => {
+      ;(getTasks as jest.Mock).mockResolvedValueOnce(mockBacklogTasks)
+      const mockOnEditTask = jest.fn()
+
+      render(
+        <CompletedTasksMenu
+          token={mockToken}
+          onTaskUncompleted={mockOnTaskUncompleted}
+          onEditTask={mockOnEditTask}
+        />
+      )
+
+      fireEvent.click(screen.getByRole('button', { name: /toggle menu/i }))
+      fireEvent.click(screen.getByRole('button', { name: /backlog/i }))
+
+      await waitFor(() => {
+        expect(screen.getByText('Backlog Task 1')).toBeInTheDocument()
+      })
+
+      const editButtons = screen.getAllByTitle('Edit task')
+      fireEvent.click(editButtons[0])
+
+      // Drawer should be closed
+      expect(screen.queryByText('Tasks')).not.toBeInTheDocument()
+    })
+
+    it('does not show Edit button on completed tasks', async () => {
+      ;(updateTaskStatus.getCompletedTasks as jest.Mock).mockResolvedValueOnce(mockCompletedTasks)
+
+      render(
+        <CompletedTasksMenu
+          token={mockToken}
+          onTaskUncompleted={mockOnTaskUncompleted}
+          onEditTask={jest.fn()}
+        />
+      )
+
+      fireEvent.click(screen.getByRole('button', { name: /toggle menu/i }))
+      fireEvent.click(screen.getByRole('button', { name: /completed/i }))
+
+      await waitFor(() => {
+        expect(screen.getByText('Completed Task 1')).toBeInTheDocument()
+      })
+
+      const editButtons = screen.queryAllByTitle('Edit task')
+      expect(editButtons).toHaveLength(0)
+    })
+  })
 })

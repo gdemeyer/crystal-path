@@ -130,7 +130,11 @@ export default function TaskEntryBlock({ onTaskAdded, token, editingTask, onEdit
     try {
       setIsSubmitting(true)
       if (isEditing) {
-        await editTask(editingTask!._id!, taskToSubmit, token!)
+        if (!editingTask?._id || !token) {
+          setError('Cannot edit: missing task ID')
+          return
+        }
+        await editTask(editingTask._id, taskToSubmit, token)
         await onEditComplete?.()
       } else {
         await postTask(taskToSubmit, token)
@@ -144,8 +148,8 @@ export default function TaskEntryBlock({ onTaskAdded, token, editingTask, onEdit
       setAttemptedSubmit(false)
       setRepeatOnComplete(false)
     } catch (err) {
-      console.error('Failed to create task:', err)
-      setError(err instanceof Error ? err.message : 'Failed to create task')
+      console.error(isEditing ? 'Failed to edit task:' : 'Failed to create task:', err)
+      setError(err instanceof Error ? err.message : isEditing ? 'Failed to edit task' : 'Failed to create task')
     } finally {
       setIsSubmitting(false)
     }

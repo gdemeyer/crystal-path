@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { Task } from '../types/types.ts'
 import { getCompletedTasks, updateTaskStatus } from '../services/functions-update-task-status.ts'
 import getTasks from '../services/functions-get-tasks.ts'
@@ -32,8 +32,12 @@ export default function CompletedTasksMenu({ token, onTaskUncompleted, refreshKe
   const [isLoadingCompleted, setIsLoadingCompleted] = useState(false)
   const [backlogLoaded, setBacklogLoaded] = useState(false)
   const [completedLoaded, setCompletedLoaded] = useState(false)
-  const [lastRefreshKey, setLastRefreshKey] = useState(refreshKey)
   const [confirmingTaskId, setConfirmingTaskId] = useState<string | null>(null)
+
+  const isBacklogExpandedRef = useRef(isBacklogExpanded)
+  isBacklogExpandedRef.current = isBacklogExpanded
+  const isCompletedExpandedRef = useRef(isCompletedExpanded)
+  isCompletedExpandedRef.current = isCompletedExpanded
 
   const getLocalDate = () => {
     const now = new Date();
@@ -43,12 +47,13 @@ export default function CompletedTasksMenu({ token, onTaskUncompleted, refreshKe
   const getTimezone = () =>
     Intl.DateTimeFormat().resolvedOptions().timeZone;
 
-  if (refreshKey !== lastRefreshKey) {
-    setLastRefreshKey(refreshKey)
+  useEffect(() => {
+    if (refreshKey === undefined) return
+
     setBacklogLoaded(false)
     setCompletedLoaded(false)
 
-    if (isBacklogExpanded) {
+    if (isBacklogExpandedRef.current) {
       setIsLoadingBacklog(true)
       getTasks(token, { view: 'backlog', date: getLocalDate(), timezone: getTimezone() })
         .then(tasks => { setBacklogTasks(tasks); setBacklogLoaded(true) })
@@ -56,14 +61,15 @@ export default function CompletedTasksMenu({ token, onTaskUncompleted, refreshKe
         .finally(() => setIsLoadingBacklog(false))
     }
 
-    if (isCompletedExpanded) {
+    if (isCompletedExpandedRef.current) {
       setIsLoadingCompleted(true)
       getCompletedTasks(token)
         .then(tasks => { setCompletedTasks(tasks); setCompletedLoaded(true) })
         .catch(err => console.error('Failed to refresh completed tasks:', err))
         .finally(() => setIsLoadingCompleted(false))
     }
-  }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [refreshKey])
 
   const handleOpenMenu = () => setIsOpen(!isOpen)
 

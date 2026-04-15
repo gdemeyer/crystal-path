@@ -345,7 +345,7 @@ describe('CompletedTasksMenu component', () => {
   })
 
   describe('edit from backlog', () => {
-    it('shows Edit button on backlog tasks', async () => {
+    it('shows ⋮ menu button on backlog tasks', async () => {
       ;(getTasks as jest.Mock).mockResolvedValueOnce(mockBacklogTasks)
 
       render(
@@ -363,11 +363,11 @@ describe('CompletedTasksMenu component', () => {
         expect(screen.getByText('Backlog Task 1')).toBeInTheDocument()
       })
 
-      const editButtons = screen.getAllByTitle('Edit task')
-      expect(editButtons).toHaveLength(2)
+      const menuButtons = screen.getAllByTitle('Task options')
+      expect(menuButtons).toHaveLength(2)
     })
 
-    it('calls onEditTask when Edit button clicked on backlog task', async () => {
+    it('calls onEditTask when Edit is clicked in ⋮ menu on backlog task', async () => {
       ;(getTasks as jest.Mock).mockResolvedValueOnce(mockBacklogTasks)
       const mockOnEditTask = jest.fn()
 
@@ -386,15 +386,18 @@ describe('CompletedTasksMenu component', () => {
         expect(screen.getByText('Backlog Task 1')).toBeInTheDocument()
       })
 
-      const editButtons = screen.getAllByTitle('Edit task')
-      fireEvent.click(editButtons[0])
+      const menuButtons = screen.getAllByTitle('Task options')
+      fireEvent.click(menuButtons[0])
+
+      const editItem = screen.getAllByText('Edit')[0]
+      fireEvent.click(editItem)
 
       expect(mockOnEditTask).toHaveBeenCalledWith(
         expect.objectContaining({ _id: '1', title: 'Backlog Task 1' })
       )
     })
 
-    it('closes drawer when Edit is clicked', async () => {
+    it('closes drawer when Edit is clicked in ⋮ menu', async () => {
       ;(getTasks as jest.Mock).mockResolvedValueOnce(mockBacklogTasks)
       const mockOnEditTask = jest.fn()
 
@@ -413,8 +416,11 @@ describe('CompletedTasksMenu component', () => {
         expect(screen.getByText('Backlog Task 1')).toBeInTheDocument()
       })
 
-      const editButtons = screen.getAllByTitle('Edit task')
-      fireEvent.click(editButtons[0])
+      const menuButtons = screen.getAllByTitle('Task options')
+      fireEvent.click(menuButtons[0])
+
+      const editItem = screen.getAllByText('Edit')[0]
+      fireEvent.click(editItem)
 
       // Drawer should be closed
       expect(screen.queryByText('Tasks')).not.toBeInTheDocument()

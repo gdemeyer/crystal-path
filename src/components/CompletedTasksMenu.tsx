@@ -33,6 +33,19 @@ export default function CompletedTasksMenu({ token, onTaskUncompleted, refreshKe
   const [backlogLoaded, setBacklogLoaded] = useState(false)
   const [completedLoaded, setCompletedLoaded] = useState(false)
   const [confirmingTaskId, setConfirmingTaskId] = useState<string | null>(null)
+  const [openMenuTaskId, setOpenMenuTaskId] = useState<string | null>(null)
+  const taskMenuRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!openMenuTaskId) return
+    const handleClickOutside = (e: MouseEvent) => {
+      if (taskMenuRef.current && !taskMenuRef.current.contains(e.target as Node)) {
+        setOpenMenuTaskId(null)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [openMenuTaskId])
 
   const isBacklogExpandedRef = useRef(isBacklogExpanded)
   isBacklogExpandedRef.current = isBacklogExpanded
@@ -208,16 +221,32 @@ export default function CompletedTasksMenu({ token, onTaskUncompleted, refreshKe
                               <h4>{task.title}</h4>
                             </div>
                             {onEditTask && (
-                              <button
-                                className="undo-button"
-                                onClick={() => {
-                                  setIsOpen(false)
-                                  onEditTask(task)
-                                }}
-                                title="Edit task"
+                              <div
+                                className="card-menu-wrapper"
+                                ref={openMenuTaskId === task._id ? taskMenuRef : null}
                               >
-                                Edit
-                              </button>
+                                <button
+                                  className="card-menu-button"
+                                  onClick={() => setOpenMenuTaskId(openMenuTaskId === task._id ? null : task._id!)}
+                                  title="Task options"
+                                >
+                                  ⋮
+                                </button>
+                                {openMenuTaskId === task._id && (
+                                  <div className="card-menu-dropdown">
+                                    <button
+                                      className="card-menu-item"
+                                      onClick={() => {
+                                        setOpenMenuTaskId(null)
+                                        setIsOpen(false)
+                                        onEditTask(task)
+                                      }}
+                                    >
+                                      Edit
+                                    </button>
+                                  </div>
+                                )}
+                              </div>
                             )}
                             <button
                               className={`undo-button ${confirmingTaskId === task._id ? 'confirming' : ''}`}

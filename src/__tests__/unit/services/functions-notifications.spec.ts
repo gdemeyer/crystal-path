@@ -7,7 +7,7 @@ import {
 import { AuthenticationError } from '../../../services/errors'
 
 const mockSubscription = {
-  endpoint: 'https://push.example.com/subscription-1',
+  endpoint: 'https://fcm.googleapis.com/fcm/send/subscription-1',
   keys: { p256dh: 'p256dh-key', auth: 'auth-key' },
   timezone: 'America/New_York',
 }

@@ -7,9 +7,9 @@ import {
 
 describe('browser notification service', () => {
   const existingSubscription = {
-    endpoint: 'https://push.example.com/subscription-1',
+    endpoint: 'https://fcm.googleapis.com/fcm/send/subscription-1',
     toJSON: () => ({
-      endpoint: 'https://push.example.com/subscription-1',
+      endpoint: 'https://fcm.googleapis.com/fcm/send/subscription-1',
       keys: { p256dh: 'p256dh-key', auth: 'auth-key' },
     }),
     unsubscribe: jest.fn().mockResolvedValue(true),

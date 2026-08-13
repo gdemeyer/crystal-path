@@ -22,11 +22,11 @@ describe('NotificationSettings', () => {
     ;(getNotificationSupport as jest.Mock).mockReturnValue('supported')
     ;(requestNotificationPermission as jest.Mock).mockResolvedValue('granted')
     ;(subscribeToPush as jest.Mock).mockResolvedValue({
-      endpoint: 'https://push.example.com/subscription-1',
+      endpoint: 'https://fcm.googleapis.com/fcm/send/subscription-1',
       keys: { p256dh: 'p256dh-key', auth: 'auth-key' },
       timezone: 'America/New_York',
     })
-    ;(unsubscribeFromPush as jest.Mock).mockResolvedValue('https://push.example.com/subscription-1')
+    ;(unsubscribeFromPush as jest.Mock).mockResolvedValue('https://fcm.googleapis.com/fcm/send/subscription-1')
     ;(getNotificationPreference as jest.Mock).mockResolvedValue({ enabled: true })
     ;(setNotificationPreference as jest.Mock).mockResolvedValue({ enabled: true })
     ;(registerPushSubscription as jest.Mock).mockResolvedValue(undefined)
@@ -72,6 +72,19 @@ describe('NotificationSettings', () => {
 
     await waitFor(() => expect(setNotificationPreference).toHaveBeenCalledWith('token', false))
     expect(unsubscribeFromPush).toHaveBeenCalled()
-    expect(removePushSubscription).toHaveBeenCalledWith('token', 'https://push.example.com/subscription-1')
+    expect(removePushSubscription).toHaveBeenCalledWith('token', 'https://fcm.googleapis.com/fcm/send/subscription-1')
+  })
+
+  it('keeps the master setting off when local device cleanup fails', async () => {
+    ;(unsubscribeFromPush as jest.Mock).mockRejectedValueOnce(new Error('device cleanup failed'))
+    render(<NotificationSettings token="token" />)
+    fireEvent.click(screen.getByRole('button', { name: /notifications/i }))
+    const checkbox = await screen.findByRole('checkbox', { name: /enable task notifications/i })
+
+    fireEvent.click(checkbox)
+
+    await waitFor(() => expect(setNotificationPreference).toHaveBeenCalledWith('token', false))
+    expect(checkbox).not.toBeChecked()
+    expect(screen.getByRole('alert')).toHaveTextContent('device cleanup failed')
   })
 })

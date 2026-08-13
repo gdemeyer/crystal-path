@@ -17,7 +17,7 @@ import {
   getNotificationClickUrl,
   getNotificationTag,
   parsePushPayload,
-} from './services/service-worker-notifications';
+} from './services/service-worker-notifications.ts';
 
 declare const self: ServiceWorkerGlobalScope;
 

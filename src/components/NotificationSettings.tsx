@@ -52,16 +52,22 @@ export default function NotificationSettings({ token }: NotificationSettingsProp
 
     try {
       await setNotificationPreference(token, nextEnabled)
-      if (!nextEnabled) {
-        const endpoint = await unsubscribeFromPush()
-        if (endpoint) {
-          await removePushSubscription(token, endpoint).catch(() => undefined)
-        }
-        setDeviceState('idle')
-      }
     } catch (error) {
       setPreferenceEnabled(!nextEnabled)
       setErrorMessage(error instanceof Error ? error.message : 'Failed to save notification settings')
+      return
+    }
+
+    if (!nextEnabled) {
+      try {
+        const endpoint = await unsubscribeFromPush()
+        if (endpoint) {
+          await removePushSubscription(token, endpoint)
+        }
+      } catch (error) {
+        setErrorMessage(error instanceof Error ? error.message : 'Failed to remove notifications from this device')
+      }
+      setDeviceState('idle')
     }
   }
 

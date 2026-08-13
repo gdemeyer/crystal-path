@@ -13,6 +13,31 @@ export interface Task {
     eligibleAt?: number;
 }
 
+export type NotificationSlotId = 'morning' | 'afternoon' | 'evening';
+
+export interface NotificationPreference {
+    enabled: boolean;
+}
+
+export interface PushSubscriptionKeys {
+    p256dh: string;
+    auth: string;
+}
+
+export interface PushSubscriptionPayload {
+    endpoint: string;
+    keys: PushSubscriptionKeys;
+    timezone: string;
+}
+
+export interface NotificationPayload {
+    title: string;
+    body: string;
+    url: string;
+    date: string;
+    slot: NotificationSlotId;
+}
+
 export const isTask = (obj: unknown): obj is Task => {
     if (typeof obj !== 'object' || obj === null) return false;
     const task = obj as Record<string, unknown>;

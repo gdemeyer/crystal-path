@@ -3,6 +3,7 @@ import { Task } from '../types/types.ts'
 import { getCompletedTasks, updateTaskStatus } from '../services/functions-update-task-status.ts'
 import getTasks from '../services/functions-get-tasks.ts'
 import { TASK_STATUS } from '../consts-status.ts'
+import NotificationSettings from './NotificationSettings.tsx'
 
 interface CompletedTasksMenuProps {
   token: string
@@ -307,6 +308,8 @@ export default function CompletedTasksMenu({ token, onTaskUncompleted, refreshKe
                   </div>
                 )}
               </div>
+
+              <NotificationSettings token={token} />
             </div>
 
             {onLogout && (

@@ -336,6 +336,52 @@ body {
   font-style: italic;
 }
 
+.notification-settings-content {
+  color: #a0aec0;
+}
+
+.notification-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  color: #cfcfcf;
+  font-weight: 600;
+}
+
+.notification-toggle input {
+  accent-color: #dba11c;
+  width: 1rem;
+  height: 1rem;
+}
+
+.notification-schedule,
+.notification-description {
+  margin: 0.65rem 0 0;
+  font-size: 0.82rem;
+}
+
+.notification-enable-button {
+  margin-top: 0.85rem;
+  padding: 0.55rem 0.75rem;
+  background-color: #4a5568;
+  color: #cfcfcf;
+  border: 1px solid #555;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.notification-enable-button:hover:not(:disabled) {
+  background-color: #5a6578;
+  border-color: #dba11c;
+  color: #dba11c;
+}
+
+.notification-enable-button:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
 /* ============================================================
    TASK ENTRY FORM
    ============================================================ */

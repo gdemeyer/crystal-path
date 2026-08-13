@@ -13,6 +13,11 @@ import { ExpirationPlugin } from 'workbox-expiration';
 import { precacheAndRoute, createHandlerBoundToURL } from 'workbox-precaching';
 import { registerRoute } from 'workbox-routing';
 import { StaleWhileRevalidate } from 'workbox-strategies';
+import {
+  getNotificationClickUrl,
+  getNotificationTag,
+  parsePushPayload,
+} from './services/service-worker-notifications';
 
 declare const self: ServiceWorkerGlobalScope;
 
@@ -75,6 +80,52 @@ self.addEventListener('message', (event) => {
   if (event.data && event.data.type === 'SKIP_WAITING') {
     self.skipWaiting();
   }
+});
+
+interface PushEventLike extends ExtendableEvent {
+  data: { json: () => unknown } | null;
+}
+
+interface NotificationClickEventLike extends ExtendableEvent {
+  notification: Notification;
+}
+
+self.addEventListener('push', (event: Event) => {
+  const pushEvent = event as unknown as PushEventLike;
+  let rawPayload: unknown;
+  try {
+    rawPayload = pushEvent.data?.json();
+  } catch {
+    rawPayload = null;
+  }
+  const payload = parsePushPayload(rawPayload);
+
+  pushEvent.waitUntil(
+    self.registration.showNotification(payload.title, {
+      body: payload.body,
+      tag: getNotificationTag(payload),
+      data: { url: payload.url },
+    }),
+  );
+});
+
+self.addEventListener('notificationclick', (event: Event) => {
+  const clickEvent = event as unknown as NotificationClickEventLike;
+  clickEvent.notification.close();
+  const requestedUrl = typeof clickEvent.notification.data?.url === 'string'
+    ? clickEvent.notification.data.url
+    : '/';
+  const targetUrl = getNotificationClickUrl(requestedUrl, self.location.origin);
+
+  clickEvent.waitUntil(
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clients) => {
+      const existingClient = clients.find(client => client.url.startsWith(self.location.origin));
+      if (existingClient) {
+        return existingClient.focus();
+      }
+      return self.clients.openWindow(targetUrl);
+    }),
+  );
 });
 
 // Any other custom service worker logic can go here.

@@ -2,6 +2,11 @@ import { NotificationPayload, NotificationSlotId } from '../types/types.ts'
 
 const slots: NotificationSlotId[] = ['morning', 'afternoon', 'evening']
 
+export interface NotificationWindowClient {
+  navigate(url: string): Promise<unknown>;
+  focus(): Promise<unknown>;
+}
+
 export function parsePushPayload(value: unknown): NotificationPayload {
   if (typeof value !== 'object' || value === null) {
     return {
@@ -35,6 +40,14 @@ export function getNotificationClickUrl(value: string, origin: string): string {
   } catch {
     return '/'
   }
+}
+
+export async function navigateNotificationClient(
+  client: NotificationWindowClient,
+  targetUrl: string,
+): Promise<void> {
+  await client.navigate(targetUrl)
+  await client.focus()
 }
 
 export function getNotificationTag(payload: Pick<NotificationPayload, 'date' | 'slot'>): string {

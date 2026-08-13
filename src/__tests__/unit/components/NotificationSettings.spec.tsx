@@ -49,6 +49,44 @@ describe('NotificationSettings', () => {
     expect(checkbox).toBeChecked()
   })
 
+  it('does not allow a toggle while the preference is loading', async () => {
+    let resolvePreference: (value: { enabled: boolean }) => void = () => undefined
+    ;(getNotificationPreference as jest.Mock).mockReturnValueOnce(new Promise(resolve => {
+      resolvePreference = resolve
+    }))
+
+    render(<NotificationSettings token="token" />)
+    fireEvent.click(screen.getByRole('button', { name: /notifications/i }))
+    const checkbox = await screen.findByRole('checkbox', { name: /enable task notifications/i })
+
+    expect(checkbox).toBeDisabled()
+    fireEvent.click(checkbox)
+    expect(setNotificationPreference).not.toHaveBeenCalled()
+
+    resolvePreference({ enabled: false })
+    await waitFor(() => expect(checkbox).not.toBeChecked())
+  })
+
+  it('serializes master preference changes', async () => {
+    let resolvePreference: (value: { enabled: boolean }) => void = () => undefined
+    ;(setNotificationPreference as jest.Mock).mockReturnValueOnce(new Promise(resolve => {
+      resolvePreference = resolve
+    }))
+
+    render(<NotificationSettings token="token" />)
+    fireEvent.click(screen.getByRole('button', { name: /notifications/i }))
+    const checkbox = await screen.findByRole('checkbox', { name: /enable task notifications/i })
+
+    fireEvent.click(checkbox)
+    await waitFor(() => expect(setNotificationPreference).toHaveBeenCalledTimes(1))
+    expect(checkbox).toBeDisabled()
+    fireEvent.click(checkbox)
+    expect(setNotificationPreference).toHaveBeenCalledTimes(1)
+
+    resolvePreference({ enabled: false })
+    await waitFor(() => expect(checkbox).not.toBeDisabled())
+  })
+
   it('requests permission only after Enable is clicked and registers the device', async () => {
     render(<NotificationSettings token="token" />)
     fireEvent.click(screen.getByRole('button', { name: /notifications/i }))
@@ -61,6 +99,18 @@ describe('NotificationSettings', () => {
     expect(subscribeToPush).toHaveBeenCalledWith(expect.any(String))
     expect(requestNotificationPermission.mock.invocationCallOrder[0])
       .toBeLessThan(subscribeToPush.mock.invocationCallOrder[0])
+  })
+
+  it('shows an error and allows retry when permission request fails', async () => {
+    ;(requestNotificationPermission as jest.Mock).mockRejectedValueOnce(new Error('permission request failed'))
+    render(<NotificationSettings token="token" />)
+    fireEvent.click(screen.getByRole('button', { name: /notifications/i }))
+    const enableButton = await screen.findByRole('button', { name: /enable on this device/i })
+
+    fireEvent.click(enableButton)
+
+    await waitFor(() => expect(screen.getByRole('alert')).toHaveTextContent('permission request failed'))
+    expect(screen.getByRole('button', { name: /enable on this device/i })).toBeEnabled()
   })
 
   it('persists master-off before best-effort device removal', async () => {

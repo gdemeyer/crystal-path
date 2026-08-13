@@ -22,6 +22,8 @@ export default function NotificationSettings({ token }: NotificationSettingsProp
   const [isExpanded, setIsExpanded] = useState(false)
   const [preferenceEnabled, setPreferenceEnabled] = useState(true)
   const [preferenceLoaded, setPreferenceLoaded] = useState(false)
+  const [isPreferenceLoading, setIsPreferenceLoading] = useState(false)
+  const [isPreferenceSaving, setIsPreferenceSaving] = useState(false)
   const [deviceState, setDeviceState] = useState<DeviceState>('idle')
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
@@ -29,6 +31,7 @@ export default function NotificationSettings({ token }: NotificationSettingsProp
     if (!isExpanded || preferenceLoaded) return
 
     let active = true
+    setIsPreferenceLoading(true)
     getNotificationPreference(token)
       .then(preference => {
         if (!active) return
@@ -37,7 +40,11 @@ export default function NotificationSettings({ token }: NotificationSettingsProp
       })
       .catch(error => {
         if (!active) return
+        setPreferenceLoaded(true)
         setErrorMessage(error instanceof Error ? error.message : 'Failed to load notification settings')
+      })
+      .finally(() => {
+        if (active) setIsPreferenceLoading(false)
       })
 
     return () => {
@@ -46,28 +53,35 @@ export default function NotificationSettings({ token }: NotificationSettingsProp
   }, [isExpanded, preferenceLoaded, token])
 
   const handleTogglePreference = async () => {
+    if (!preferenceLoaded || isPreferenceLoading || isPreferenceSaving || deviceState === 'enabling') return
+
     const nextEnabled = !preferenceEnabled
     setErrorMessage(null)
     setPreferenceEnabled(nextEnabled)
+    setIsPreferenceSaving(true)
 
     try {
-      await setNotificationPreference(token, nextEnabled)
-    } catch (error) {
-      setPreferenceEnabled(!nextEnabled)
-      setErrorMessage(error instanceof Error ? error.message : 'Failed to save notification settings')
-      return
-    }
-
-    if (!nextEnabled) {
       try {
-        const endpoint = await unsubscribeFromPush()
-        if (endpoint) {
-          await removePushSubscription(token, endpoint)
-        }
+        await setNotificationPreference(token, nextEnabled)
       } catch (error) {
-        setErrorMessage(error instanceof Error ? error.message : 'Failed to remove notifications from this device')
+        setPreferenceEnabled(!nextEnabled)
+        setErrorMessage(error instanceof Error ? error.message : 'Failed to save notification settings')
+        return
       }
-      setDeviceState('idle')
+
+      if (!nextEnabled) {
+        try {
+          const endpoint = await unsubscribeFromPush()
+          if (endpoint) {
+            await removePushSubscription(token, endpoint)
+          }
+        } catch (error) {
+          setErrorMessage(error instanceof Error ? error.message : 'Failed to remove notifications from this device')
+        }
+        setDeviceState('idle')
+      }
+    } finally {
+      setIsPreferenceSaving(false)
     }
   }
 
@@ -79,13 +93,13 @@ export default function NotificationSettings({ token }: NotificationSettingsProp
     }
 
     setDeviceState('enabling')
-    const permission = await requestNotificationPermission()
-    if (permission !== 'granted') {
-      setDeviceState('denied')
-      return
-    }
-
     try {
+      const permission = await requestNotificationPermission()
+      if (permission !== 'granted') {
+        setDeviceState('denied')
+        return
+      }
+
       const subscription = await subscribeToPush(process.env.REACT_APP_VAPID_PUBLIC_KEY ?? '')
       await setNotificationPreference(token, true)
       await registerPushSubscription(token, subscription)
@@ -116,6 +130,7 @@ export default function NotificationSettings({ token }: NotificationSettingsProp
               type="checkbox"
               checked={preferenceEnabled}
               onChange={handleTogglePreference}
+              disabled={!preferenceLoaded || isPreferenceLoading || isPreferenceSaving || deviceState === 'enabling'}
               aria-label="Enable task notifications"
             />
             <span>Task notifications</span>

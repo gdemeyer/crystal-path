@@ -16,6 +16,7 @@ import { StaleWhileRevalidate } from 'workbox-strategies';
 import {
   getNotificationClickUrl,
   getNotificationTag,
+  navigateNotificationClient,
   parsePushPayload,
 } from './services/service-worker-notifications.ts';
 
@@ -121,7 +122,7 @@ self.addEventListener('notificationclick', (event: Event) => {
     self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clients) => {
       const existingClient = clients.find(client => client.url.startsWith(self.location.origin));
       if (existingClient) {
-        return existingClient.focus();
+        return navigateNotificationClient(existingClient, targetUrl);
       }
       return self.clients.openWindow(targetUrl);
     }),

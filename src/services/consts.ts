@@ -6,7 +6,9 @@ const consts = {
         editTask: "edit-task",
         updateTaskStatus: "update-task-status",
         getCompletedTasks: "get-completed-tasks",
-        authenticate: "authenticate"
+        authenticate: "authenticate",
+        notificationPreference: "notification-preference",
+        pushSubscription: "push-subscription"
     }
 }
 

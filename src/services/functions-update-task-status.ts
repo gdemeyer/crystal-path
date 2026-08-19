@@ -17,6 +17,7 @@ export async function updateTaskStatus(
     body: JSON.stringify({
       taskId,
       status,
+      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
     }),
   })
 

@@ -32,6 +32,12 @@ function isSubscriptionKeys(value: unknown): value is { p256dh: string; auth: st
   return typeof keys.p256dh === 'string' && typeof keys.auth === 'string'
 }
 
+export async function hasPushSubscription(): Promise<boolean> {
+  if (getNotificationSupport() === 'unsupported') return false
+  const registration = await navigator.serviceWorker.ready
+  return Boolean(await registration.pushManager.getSubscription())
+}
+
 export async function subscribeToPush(vapidPublicKey: string): Promise<PushSubscriptionPayload> {
   if (getNotificationSupport() === 'unsupported') {
     throw new Error('Notifications are not supported in this browser')

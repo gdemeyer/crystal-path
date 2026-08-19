@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import {
   getNotificationSupport,
+  hasPushSubscription,
   requestNotificationPermission,
   subscribeToPush,
   unsubscribeFromPush,
@@ -37,6 +38,13 @@ export default function NotificationSettings({ token }: NotificationSettingsProp
         if (!active) return
         setPreferenceEnabled(preference.enabled)
         setPreferenceLoaded(true)
+        hasPushSubscription()
+          .then(hasSubscription => {
+            if (active) setDeviceState(hasSubscription ? 'enabled' : 'idle')
+          })
+          .catch(() => {
+            if (active) setDeviceState('idle')
+          })
       })
       .catch(error => {
         if (!active) return
@@ -147,7 +155,7 @@ export default function NotificationSettings({ token }: NotificationSettingsProp
               {deviceState === 'enabling' ? 'Enabling…' : 'Enable on this device'}
             </button>
           )}
-          {deviceState === 'enabled' && <p role="status">Notifications enabled on this device.</p>}
+          {preferenceEnabled && deviceState === 'enabled' && <p role="status">Notifications enabled on this device.</p>}
           {deviceState === 'denied' && <p role="status">Permission denied. Allow notifications in browser settings.</p>}
           {deviceState === 'unsupported' && <p role="status">This browser does not support push notifications.</p>}
           {errorMessage && <p role="alert">{errorMessage}</p>}

@@ -2,6 +2,7 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import NotificationSettings from '../../../components/NotificationSettings'
 import {
   getNotificationSupport,
+  hasPushSubscription,
   requestNotificationPermission,
   subscribeToPush,
   unsubscribeFromPush,
@@ -20,6 +21,7 @@ describe('NotificationSettings', () => {
   beforeEach(() => {
     jest.clearAllMocks()
     ;(getNotificationSupport as jest.Mock).mockReturnValue('supported')
+    ;(hasPushSubscription as jest.Mock).mockResolvedValue(false)
     ;(requestNotificationPermission as jest.Mock).mockResolvedValue('granted')
     ;(subscribeToPush as jest.Mock).mockResolvedValue({
       endpoint: 'https://fcm.googleapis.com/fcm/send/subscription-1',
@@ -99,6 +101,17 @@ describe('NotificationSettings', () => {
     expect(subscribeToPush).toHaveBeenCalledWith(expect.any(String))
     expect(requestNotificationPermission.mock.invocationCallOrder[0])
       .toBeLessThan(subscribeToPush.mock.invocationCallOrder[0])
+  })
+
+  it('restores the enabled device state from an existing browser subscription', async () => {
+    ;(hasPushSubscription as jest.Mock).mockResolvedValueOnce(true)
+
+    render(<NotificationSettings token="token" />)
+    fireEvent.click(screen.getByRole('button', { name: /notifications/i }))
+
+    expect(await screen.findByRole('status')).toHaveTextContent('Notifications enabled on this device.')
+    expect(screen.queryByRole('button', { name: /enable on this device/i })).not.toBeInTheDocument()
+    expect(requestNotificationPermission).not.toHaveBeenCalled()
   })
 
   it('shows an error and allows retry when permission request fails', async () => {

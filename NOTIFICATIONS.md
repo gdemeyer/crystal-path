@@ -22,3 +22,14 @@ The browser must support Push API and Notification API. The deployed app must us
 - If the device timezone changes while the app is closed, it updates the next time the authenticated app registers the subscription.
 
 Netlify Scheduled Functions must be enabled for the site and support the configured one-minute schedule. The scheduled function uses MongoDB delivery claims to prevent duplicate sends during normal concurrent invocations. Web Push providers do not offer an exactly-once guarantee: a process crash after provider acceptance can still produce a rare duplicate.
+
+## On-demand runs
+
+Scheduled functions are not reachable through HTTP. For a manual run, set `NOTIFICATION_MANUAL_TOKEN` in the backend environment and call the separate `send-notifications-manual` function:
+
+```bash
+curl -X POST https://YOUR_SITE.netlify.app/.netlify/functions/send-notifications-manual \
+	-H "Authorization: Bearer $NOTIFICATION_MANUAL_TOKEN"
+```
+
+Keep the manual token server-side and never expose it to the frontend.

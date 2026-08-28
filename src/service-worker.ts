@@ -104,6 +104,7 @@ self.addEventListener('push', (event: Event) => {
   pushEvent.waitUntil(
     self.registration.showNotification(payload.title, {
       body: payload.body,
+      icon: `${process.env.PUBLIC_URL}/crystal_path_logo.png`,
       tag: getNotificationTag(payload),
       data: { url: payload.url },
     }),
